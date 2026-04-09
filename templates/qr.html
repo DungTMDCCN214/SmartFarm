@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SmartFarm - Quét QR để truy cập</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .logo {
+            margin-bottom: 20px;
+        }
+        
+        .logo i {
+            font-size: 60px;
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .logo h1 {
+            color: #2E7D32;
+            margin-top: 10px;
+            font-size: 28px;
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 20px 0;
+            display: inline-block;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        #qrcode {
+            display: flex;
+            justify-content: center;
+        }
+        
+        #qrcode img {
+            width: 200px;
+            height: 200px;
+        }
+        
+        .info-box {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .ip-address {
+            background: #2E7D32;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+        
+        .instruction {
+            text-align: left;
+            background: #e8f5e9;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .instruction h4 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+        }
+        
+        .instruction ol {
+            padding-left: 20px;
+        }
+        
+        .instruction li {
+            margin: 8px 0;
+            color: #555;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .status.online {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-copy {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-copy:hover {
+            background: #1B5E20;
+            transform: translateY(-2px);
+        }
+        
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+            }
+            
+            .ip-address {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-leaf"></i>
+            <h1>SmartFarm</h1>
+            <p class="text-muted">Quét mã QR để truy cập trên điện thoại</p>
+        </div>
+        
+        <div class="qr-container">
+            <div id="qrcode"></div>
+        </div>
+        
+        <div class="info-box">
+            <strong>🌐 Địa chỉ truy cập:</strong>
+            <div class="ip-address" id="ipAddress">Đang tải...</div>
+            <button class="btn-copy" onclick="copyIP()">
+                <i class="fas fa-copy"></i> Sao chép địa chỉ
+            </button>
+        </div>
+        
+        <div class="instruction">
+            <h4><i class="fas fa-mobile-alt"></i> Hướng dẫn sử dụng:</h4>
+            <ol>
+                <li>Đảm bảo điện thoại <strong>cùng mạng WiFi</strong> với máy tính</li>
+                <li>Mở ứng dụng <strong>Camera</strong> hoặc <strong>QR Scanner</strong> trên điện thoại</li>
+                <li>Quét mã QR ở trên</li>
+                <li>Hoặc gõ trực tiếp địa chỉ <strong id="ipShort"></strong> vào trình duyệt</li>
+                <li>Đăng nhập với tài khoản: <code>demo@smartfarm.com</code> / <code>123456</code></li>
+            </ol>
+        </div>
+        
+        <div class="status online" id="status">
+            <i class="fas fa-circle"></i> Server đang chạy
+        </div>
+        
+        <div class="footer">
+            <i class="fas fa-shield-alt"></i> Kết nối an toàn qua mạng nội bộ
+        </div>
+    </div>
+
+    <script>
+        let currentIP = '';
+        
+        // Lấy IP từ server
+        async function getIP() {
+            try {
+                // Thử lấy IP từ API
+                const response = await fetch('/api/ip');
+                const data = await response.json();
+                currentIP = data.ip;
+                displayIP(currentIP);
+            } catch (error) {
+                // Nếu API chưa có, dùng domain hiện tại
+                console.log('API /api/ip chưa có, dùng domain hiện tại');
+                currentIP = window.location.hostname;
+                displayIP(currentIP);
+            }
+        }
+        
+        function displayIP(ip) {
+            const url = `http://${ip}:5000`;
+            document.getElementById('ipAddress').innerHTML = url;
+            document.getElementById('ipShort').innerHTML = `${ip}:5000`;
+            
+            // Tạo QR code
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = '';
+            
+            new QRCode(qrcodeDiv, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: "#2E7D32",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+        
+        // Sao chép địa chỉ
+        function copyIP() {
+            const url = document.getElementById('ipAddress').innerText;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Đã sao chép!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }).catch(() => {
+                alert('Sao chép thủ công: ' + url);
+            });
+        }
+        
+        // Tự động refresh status
+        async function checkServer() {
+            try {
+                const response = await fetch('/api/check');
+                if (response.ok) {
+                    document.getElementById('status').innerHTML = '<i class="fas fa-circle"></i> Server đang chạy';
+                    document.getElementById('status').className = 'status online';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '<i class="fas fa-exclamation-circle"></i> Kiểm tra kết nối...';
+            }
+        }
+        
+        // Khởi tạo
+        getIP();
+        setInterval(checkServer, 30000);
+        
+        // Thêm Font Awesome nếu chưa có
+        if (!document.querySelector('link[href*="font-awesome"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            document.head.appendChild(link);
+        }
+    </script>
+</body>
+</html>

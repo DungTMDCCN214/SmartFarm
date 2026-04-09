@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Thời tiết - SmartFarm</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-green: #2e7d32;
+        --secondary-green: #4caf50;
+      }
+
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 70px;
+        padding-bottom: 70px;
+      }
+
+      .navbar {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white !important;
+      }
+
+      .weather-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+
+      .weather-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .temp-big {
+        font-size: 4rem;
+        font-weight: bold;
+        color: var(--primary-green);
+      }
+
+      .alert-card {
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+        animation: slideIn 0.5s;
+      }
+
+      .alert-danger {
+        background: linear-gradient(135deg, #fff5f5, #fee);
+        border-left: 5px solid #dc3545;
+      }
+
+      .alert-warning {
+        background: linear-gradient(135deg, #fffbf0, #fef9e6);
+        border-left: 5px solid #ffc107;
+      }
+
+      .alert-success {
+        background: linear-gradient(135deg, #f0fff4, #e6f9ed);
+        border-left: 5px solid #28a745;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .forecast-item {
+        text-align: center;
+        padding: 15px 10px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        margin: 5px;
+        transition: all 0.3s;
+      }
+
+      .forecast-item:hover {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        color: white;
+        transform: translateY(-5px);
+      }
+
+      .schedule-item {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+      }
+
+      .schedule-item:hover {
+        background: #e8f5e9;
+        transform: translateX(5px);
+      }
+
+      .priority-high {
+        color: #dc3545;
+        font-weight: bold;
+      }
+      .priority-medium {
+        color: #ffc107;
+        font-weight: bold;
+      }
+      .priority-low {
+        color: #28a745;
+        font-weight: bold;
+      }
+
+      .search-container {
+        position: relative;
+      }
+
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .search-results div {
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .search-results div:hover {
+        background: #e8f5e9;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+      }
+
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+
+      .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #666;
+        font-size: 0.8rem;
+      }
+
+      .bottom-nav-item i {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+      }
+
+      .bottom-nav-item.active,
+      .bottom-nav-item:hover {
+        color: var(--primary-green);
+      }
+
+      @media (min-width: 768px) {
+        .bottom-nav {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-leaf"></i> SmartFarm
+        </a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <!-- Search City -->
+          <div class="weather-card">
+            <div class="search-container">
+              <div class="input-group">
+                <input
+                  type="text"
+                  id="cityInput"
+                  class="form-control form-control-lg"
+                  placeholder="Nhập tên thành phố..."
+                  onkeyup="searchCity()"
+                />
+                <button class="btn btn-success" onclick="getWeather()">
+                  <i class="fas fa-search"></i> Tìm
+                </button>
+              </div>
+              <div id="searchResults" class="search-results"></div>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div id="loading" class="loading" style="display: none">
+            <div
+              class="spinner-border text-success"
+              style="width: 3rem; height: 3rem"
+            ></div>
+            <p class="mt-2">Đang lấy dữ liệu thời tiết...</p>
+          </div>
+
+          <!-- Current Weather -->
+          <div id="currentWeather" style="display: none"></div>
+
+          <!-- Alerts -->
+          <div id="alertsContainer"></div>
+
+          <!-- Forecast -->
+          <div id="forecastContainer"></div>
+
+          <!-- Care Schedule -->
+          <div id="careSchedule"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <a href="/" class="bottom-nav-item"
+        ><i class="fas fa-home"></i><span>Trang chủ</span></a
+      >
+      <a href="/diagnose" class="bottom-nav-item"
+        ><i class="fas fa-stethoscope"></i><span>Chẩn đoán</span></a
+      >
+      <a href="/weather" class="bottom-nav-item active"
+        ><i class="fas fa-cloud-sun"></i><span>Thời tiết</span></a
+      >
+      <a href="/calendar" class="bottom-nav-item"
+        ><i class="fas fa-calendar"></i><span>Lịch</span></a
+      >
+      <a href="/chatbot" class="bottom-nav-item"
+        ><i class="fas fa-robot"></i><span>Chat</span></a
+      >
+    </div>
+
+    <script>
+      let currentCity = "Hà Nội";
+
+      // Tìm kiếm thành phố
+      async function searchCity() {
+        const keyword = document.getElementById("cityInput").value;
+
+        if (keyword.length < 2) {
+          document.getElementById("searchResults").style.display = "none";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `/api/weather/search?q=${encodeURIComponent(keyword)}`,
+          );
+          const cities = await response.json();
+
+          const resultsDiv = document.getElementById("searchResults");
+          if (cities.length > 0) {
+            resultsDiv.innerHTML = cities
+              .map(
+                (city) => `<div onclick="selectCity('${city}')">${city}</div>`,
+              )
+              .join("");
+            resultsDiv.style.display = "block";
+          } else {
+            resultsDiv.style.display = "none";
+          }
+        } catch (error) {
+          console.error("Search error:", error);
+        }
+      }
+
+      // Chọn thành phố
+      function selectCity(city) {
+        document.getElementById("cityInput").value = city;
+        document.getElementById("searchResults").style.display = "none";
+        currentCity = city;
+        getWeather();
+      }
+
+      // Lấy thời tiết
+      async function getWeather() {
+        const city = document.getElementById("cityInput").value || currentCity;
+
+        // Hiển thị loading
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("currentWeather").style.display = "none";
+        document.getElementById("alertsContainer").innerHTML = "";
+        document.getElementById("forecastContainer").innerHTML = "";
+        document.getElementById("careSchedule").innerHTML = "";
+
+        try {
+          // Lấy thời tiết hiện tại
+          const weatherRes = await fetch(
+            `/api/weather?city=${encodeURIComponent(city)}`,
+          );
+          const weatherData = await weatherRes.json();
+
+          if (weatherData.success) {
+            displayCurrentWeather(weatherData.current);
+            displayAlerts(weatherData.alerts);
+            displayCareSchedule(weatherData.care_schedule);
+            currentCity = weatherData.current.city;
+          } else {
+            showError("Không tìm thấy thành phố");
+          }
+
+          // Lấy dự báo
+          const forecastRes = await fetch(
+            `/api/weather/forecast?city=${encodeURIComponent(city)}`,
+          );
+          const forecastData = await forecastRes.json();
+
+          if (forecastData.success) {
+            displayForecast(forecastData.forecast);
+          }
+        } catch (error) {
+          console.error("Weather error:", error);
+          showError("Có lỗi xảy ra, vui lòng thử lại");
+        } finally {
+          document.getElementById("loading").style.display = "none";
+        }
+      }
+
+      // Hiển thị thời tiết hiện tại
+      function displayCurrentWeather(weather) {
+        const container = document.getElementById("currentWeather");
+        container.innerHTML = `
+                <div class="weather-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2>${weather.city}</h2>
+                            <p class="text-muted">${weather.date || "Hôm nay"}</p>
+                            <div class="temp-big">${weather.temperature}°C</div>
+                            <p>Cảm giác như ${weather.feels_like}°C</p>
+                            <p><i class="${weather.icon}"></i> ${weather.condition}</p>
+                        </div>
+                        <div>
+                            <i class="${weather.icon.replace("text-warning", "").replace("text-primary", "").replace("text-info", "")}" style="font-size: 80px;"></i>
+                        </div>
+                    </div>
+                    <div class="row mt-4 text-center">
+                        <div class="col-4">
+                            <i class="fas fa-tint fa-2x text-primary"></i>
+                            <p class="mb-0 mt-2">Độ ẩm</p>
+                            <h5>${weather.humidity}%</h5>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-wind fa-2x text-info"></i>
+                            <p class="mb-0 mt-2">Gió</p>
+                            <h5>${weather.wind_speed} km/h</h5>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-tachometer-alt fa-2x text-secondary"></i>
+                            <p class="mb-0 mt-2">Áp suất</p>
+                            <h5>${weather.pressure} hPa</h5>
+                        </div>
+                    </div>
+                </div>
+            `;
+        container.style.display = "block";
+      }
+
+      // Hiển thị cảnh báo
+      function displayAlerts(alerts) {
+        const container = document.getElementById("alertsContainer");
+
+        if (!alerts || alerts.length === 0) {
+          container.innerHTML = "";
+          return;
+        }
+
+        container.innerHTML = alerts
+          .map(
+            (alert) => `
+                <div class="weather-card alert-${alert.type}">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas ${alert.icon} fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-2">${alert.title}</h5>
+                            <p class="mb-2">${alert.message}</p>
+                            ${
+                              alert.advice
+                                ? `
+                                <div class="mt-2">
+                                    <small><strong>📌 Lời khuyên:</strong></small>
+                                    <ul class="small mb-0 mt-1">
+                                        ${alert.advice.map((a) => `<li>${a}</li>`).join("")}
+                                    </ul>
+                                </div>
+                            `
+                                : ""
+                            }
+                        </div>
+                    </div>
+                </div>
+            `,
+          )
+          .join("");
+      }
+
+      // Hiển thị dự báo
+      function displayForecast(forecast) {
+        if (!forecast || forecast.length === 0) return;
+
+        const container = document.getElementById("forecastContainer");
+        container.innerHTML = `
+                <h4 class="mb-3"><i class="fas fa-calendar-week"></i> Dự báo 5 ngày tới</h4>
+                <div class="row">
+                    ${forecast
+                      .map(
+                        (day) => `
+                        <div class="col-md-2 col-4 mb-2">
+                            <div class="forecast-item">
+                                <p class="mb-1"><strong>${day.day_of_week}</strong></p>
+                                <i class="fas ${day.icon.split(" ")[0]} fa-2x"></i>
+                                <p class="mb-0 mt-2">${day.temp_max}° / ${day.temp_min}°</p>
+                                <small>${day.condition}</small>
+                            </div>
+                        </div>
+                    `,
+                      )
+                      .join("")}
+                </div>
+            `;
+      }
+
+      // Hiển thị lịch chăm sóc
+      function displayCareSchedule(schedule) {
+        if (!schedule || schedule.length === 0) {
+          document.getElementById("careSchedule").innerHTML = "";
+          return;
+        }
+
+        const container = document.getElementById("careSchedule");
+        container.innerHTML = `
+                <h4 class="mb-3 mt-4"><i class="fas fa-clipboard-list"></i> Lịch chăm sóc đề xuất</h4>
+                ${schedule
+                  .map(
+                    (item) => `
+                    <div class="schedule-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">${item.task}</h6>
+                                <small class="text-muted">🕐 ${item.time}</small>
+                                <p class="small mb-0 mt-1">📝 ${item.note}</p>
+                            </div>
+                            <span class="priority-${item.priority.toLowerCase()}">${item.priority}</span>
+                        </div>
+                    </div>
+                `,
+                  )
+                  .join("")}
+            `;
+      }
+
+      // Hiển thị lỗi
+      function showError(message) {
+        const container = document.getElementById("currentWeather");
+        container.style.display = "block";
+        container.innerHTML = `
+                <div class="weather-card text-center text-danger">
+                    <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    <p class="mt-2">${message}</p>
+                    <button class="btn btn-success" onclick="getWeather()">Thử lại</button>
+                </div>
+            `;
+      }
+
+      // Ẩn kết quả tìm kiếm khi click ra ngoài
+      document.addEventListener("click", function (e) {
+        if (!document.querySelector(".search-container").contains(e.target)) {
+          document.getElementById("searchResults").style.display = "none";
+        }
+      });
+
+      // Tải dữ liệu mặc định
+      getWeather();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

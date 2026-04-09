@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Đăng nhập - SmartFarm</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-green: #2e7d32;
+        --secondary-green: #4caf50;
+      }
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+      }
+      .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .login-card {
+        background: white;
+        border-radius: 30px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 450px;
+        width: 100%;
+        animation: fadeInUp 0.6s;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .logo i {
+        font-size: 60px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .logo h3 {
+        color: var(--primary-green);
+        margin-top: 10px;
+      }
+      .form-control {
+        border-radius: 12px;
+        padding: 12px 15px;
+      }
+      .btn-login {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+      }
+      .social-login {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .social-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #ddd;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: #666;
+      }
+      .social-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+      }
+      .demo-account {
+        background: #e8f5e9;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-card">
+        <div class="logo">
+          <i class="fas fa-leaf"></i>
+          <h3>SmartFarm</h3>
+          <p class="text-muted">Nông nghiệp thông minh</p>
+        </div>
+
+        <form onsubmit="login(event)">
+          <div class="mb-3">
+            <label class="form-label">Email / Tên đăng nhập</label>
+            <input
+              type="text"
+              id="username"
+              class="form-control"
+              placeholder="Nhập email hoặc tên đăng nhập"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <input
+              type="password"
+              id="password"
+              class="form-control"
+              placeholder="Nhập mật khẩu"
+              required
+            />
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="remember" />
+            <label class="form-check-label">Ghi nhớ đăng nhập</label>
+          </div>
+          <button type="submit" class="btn btn-success w-100 btn-login">
+            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+          </button>
+        </form>
+
+        <div class="demo-account">
+          <p class="mb-1 text-center"><strong>📱 Tài khoản demo</strong></p>
+          <p class="mb-0 small text-center">
+            Email: <code>demo@smartfarm.com</code> hoặc <code>demo</code><br />
+            Mật khẩu: <code>123456</code>
+          </p>
+        </div>
+
+        <div class="social-login">
+          <a href="#" class="social-btn"
+            ><i class="fab fa-google text-danger"></i
+          ></a>
+          <a href="#" class="social-btn"
+            ><i class="fab fa-facebook text-primary"></i
+          ></a>
+          <a href="#" class="social-btn"><i class="fab fa-apple"></i></a>
+        </div>
+
+        <div class="text-center mt-4">
+          <p class="mb-0">
+            Chưa có tài khoản?
+            <a href="#" onclick="showRegister()" class="text-success"
+              >Đăng ký ngay</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-user-plus"></i> Đăng ký tài khoản
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="text"
+              id="regName"
+              class="form-control mb-3"
+              placeholder="Họ và tên"
+            />
+            <input
+              type="email"
+              id="regEmail"
+              class="form-control mb-3"
+              placeholder="Email"
+            />
+            <input
+              type="text"
+              id="regUsername"
+              class="form-control mb-3"
+              placeholder="Tên đăng nhập"
+            />
+            <input
+              type="password"
+              id="regPassword"
+              class="form-control mb-3"
+              placeholder="Mật khẩu"
+            />
+            <input
+              type="password"
+              id="regConfirm"
+              class="form-control"
+              placeholder="Xác nhận mật khẩu"
+            />
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Hủy
+            </button>
+            <button class="btn btn-success" onclick="register()">
+              Đăng ký
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function login(event) {
+        event.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        // Tài khoản demo
+        if (
+          (username === "demo@smartfarm.com" || username === "demo") &&
+          password === "123456"
+        ) {
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("user_id", "1");
+          localStorage.setItem("username", "demo");
+          localStorage.setItem("fullname", "Người dùng demo");
+          alert("Đăng nhập thành công!");
+          window.location.href = "/";
+          return;
+        }
+
+        // Tài khoản đã đăng ký
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+        const user = users.find(
+          (u) =>
+            (u.email === username || u.username === username) &&
+            u.password === password,
+        );
+
+        if (user) {
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("user_id", user.id);
+          localStorage.setItem("username", user.username);
+          localStorage.setItem("fullname", user.fullname);
+          alert("Đăng nhập thành công!");
+          window.location.href = "/";
+        } else {
+          alert(
+            "Sai email hoặc mật khẩu!\n\n📱 Tài khoản demo: demo@smartfarm.com\n🔑 Mật khẩu: 123456",
+          );
+        }
+      }
+
+      function showRegister() {
+        new bootstrap.Modal(document.getElementById("registerModal")).show();
+      }
+
+      function register() {
+        const fullname = document.getElementById("regName").value;
+        const email = document.getElementById("regEmail").value;
+        const username = document.getElementById("regUsername").value;
+        const password = document.getElementById("regPassword").value;
+        const confirm = document.getElementById("regConfirm").value;
+
+        if (!fullname || !email || !username || !password) {
+          alert("Vui lòng điền đầy đủ thông tin!");
+          return;
+        }
+
+        if (password !== confirm) {
+          alert("Mật khẩu xác nhận không khớp!");
+          return;
+        }
+
+        const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+        if (users.find((u) => u.email === email)) {
+          alert("Email đã được đăng ký!");
+          return;
+        }
+
+        if (users.find((u) => u.username === username)) {
+          alert("Tên đăng nhập đã tồn tại!");
+          return;
+        }
+
+        const newUser = {
+          id: Date.now(),
+          fullname: fullname,
+          email: email,
+          username: username,
+          password: password,
+        };
+
+        users.push(newUser);
+        localStorage.setItem("users", JSON.stringify(users));
+
+        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        bootstrap.Modal.getInstance(
+          document.getElementById("registerModal"),
+        ).hide();
+        document.getElementById("username").value = username;
+      }
+
+      // Kiểm tra đã đăng nhập chưa
+      if (localStorage.getItem("isLoggedIn") === "true") {
+        window.location.href = "/";
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
