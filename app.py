@@ -1,5 +1,6 @@
 import os
 import base64
+from unittest import result
 import uuid
 import sqlite3
 from datetime import datetime, timedelta
@@ -12,6 +13,8 @@ import random
 from config import config
 from models.weather_model import WeatherModel
 from services.weather_service import WeatherService
+
+from predict import predict_disease
 
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
@@ -399,81 +402,79 @@ def api_check_auth():
 # ==================== API DỰ ĐOÁN BỆNH ====================
 
 # Từ điển bệnh và cách điều trị
+# Cập nhật lại DISEASE_ADVICE cho đúng với class_names trong predict.py
 DISEASE_ADVICE = {
-    "Bệnh đạo ôn hại lúa": {
-        "description": "Bệnh do nấm Pyricularia oryzae gây ra, vết bệnh hình thoi màu nâu xám, viền nâu đỏ.",
-        "treatment": [
-            "Sử dụng thuốc đặc trị: Tricyclazole, Isoprothiolane, Kasugamycin",
-            "Vệ sinh đồng ruộng, thu dọn tàn dư cây bệnh",
-            "Bón phân cân đối, không bón thừa đạm",
-            "Đảm bảo mật độ gieo cấy hợp lý"
-        ]
+    # CAM
+    "benh_da_dang": {
+        "description": "Bệnh đốm đa dạng trên lá cam, do nấm hoặc vi khuẩn gây ra.",
+        "treatment": ["Cắt tỉa lá bệnh", "Phun thuốc đặc trị", "Bón phân cân đối"]
     },
-    "Bệnh đốm lá ngô": {
-        "description": "Bệnh do nấm Exserohilum turcicum gây ra, làm giảm năng suất nghiêm trọng.",
-        "treatment": [
-            "Luân canh cây trồng 2-3 năm",
-            "Sử dụng giống kháng bệnh",
-            "Phun Mancozeb hoặc Propiconazole khi bệnh chớm xuất hiện",
-            "Vệ sinh đồng ruộng sau thu hoạch"
-        ]
+    "benh_loet": {
+        "description": "Bệnh loét trên lá và quả, do vi khuẩn Xanthomonas gây ra.",
+        "treatment": ["Phun thuốc kháng sinh thực vật", "Vệ sinh vườn sạch sẽ", "Sử dụng giống kháng bệnh"]
     },
-    "Bệnh vàng lá greening": {
-        "description": "Bệnh do vi khuẩn Candidatus Liberibacter gây ra, làm lá vàng, quả nhỏ, lệch, chua.",
-        "treatment": [
-            "Nhổ bỏ cây bệnh nặng để tránh lây lan",
-            "Sử dụng cây giống sạch bệnh",
-            "Phun thuốc trừ rầy chổng cánh - môi giới truyền bệnh",
-            "Bón phân hữu cơ để tăng sức đề kháng"
-        ]
-    },
-    "Bệnh phấn trắng": {
-        "description": "Bệnh do nấm gây ra, xuất hiện lớp phấn trắng trên lá, làm giảm khả năng quang hợp.",
-        "treatment": [
-            "Sử dụng thuốc đặc trị: Anvil, Score, Tilt",
-            "Vệ sinh đồng ruộng, thu dọn tàn dư cây bệnh",
-            "Tăng cường lưu thông không khí trong vườn",
-            "Luân canh cây trồng"
-        ]
-    },
-    "Cây khỏe mạnh": {
+    "la_khoe": {
         "description": "Cây của bạn đang phát triển tốt, không có dấu hiệu bệnh.",
-        "treatment": [
-            "Tiếp tục chăm sóc theo quy trình",
-            "Duy trì độ ẩm phù hợp",
-            "Bón phân định kỳ",
-            "Theo dõi thường xuyên để phát hiện sớm bệnh"
-        ]
+        "treatment": ["Tiếp tục chăm sóc định kỳ", "Theo dõi thường xuyên", "Bón phân hợp lý"]
+    },
+    "thieu_dinh_duong": {
+        "description": "Cây thiếu dinh dưỡng, lá vàng, sinh trưởng kém.",
+        "treatment": ["Bón phân NPK cân đối", "Bổ sung phân hữu cơ", "Tưới nước đầy đủ"]
+    },
+    
+    # CHANH
+    "La_vang_thoi_re": {
+        "description": "Lá vàng thối rễ do nấm hoặc ngập úng.",
+        "treatment": ["Thoát nước kịp thời", "Xử lý nấm bằng thuốc đặc trị", "Cải tạo đất"]
+    },
+    "Lo_loet": {
+        "description": "Bệnh loét trên cây chanh, do vi khuẩn.",
+        "treatment": ["Phun thuốc Copper", "Cắt tỉa cành bệnh", "Vệ sinh dụng cụ"]
+    },
+    "dom_den": {
+        "description": "Bệnh đốm đen trên lá, do nấm gây ra.",
+        "treatment": ["Phun thuốc chống nấm", "Tăng cường lưu thông không khí", "Vệ sinh vườn"]
+    },
+    
+    # DƯA HẤU
+    "Benh_suong_mai": {
+        "description": "Bệnh sương mai trên dưa hấu, gây hại nặng trên lá.",
+        "treatment": ["Phun Mancozeb", "Luân canh cây trồng", "Thu dọn tàn dư"]
+    },
+    "Benh_than_thu": {
+        "description": "Bệnh thán thư trên dưa hấu, làm thối quả và cháy lá.",
+        "treatment": ["Phun thuốc đặc trị", "Trồng với mật độ hợp lý", "Bón phân cân đối"]
+    },
+    "virus_kham": {
+        "description": "Bệnh virus khảm, làm lá xoăn, quả nhỏ.",
+        "treatment": ["Nhổ bỏ cây bệnh", "Phòng trừ côn trùng môi giới", "Dùng giống sạch bệnh"]
+    },
+    
+    # ... Thêm các bệnh khác tương tự
+    "La_khoe_manh": {
+        "description": "Cây khỏe mạnh, phát triển tốt.",
+        "treatment": ["Chăm sóc định kỳ", "Theo dõi sâu bệnh"]
+    },
+    "Cay_khoe_manh": {
+        "description": "Cây khỏe mạnh, không có dấu hiệu bệnh.",
+        "treatment": ["Tiếp tục chăm sóc tốt"]
     }
 }
 
-def predict_disease_mock(plant_type):
-    """Dự đoán bệnh (mock data)"""
-    diseases_by_plant = {
-        "lua": ["Bệnh đạo ôn hại lúa", "Cây khỏe mạnh"],
-        "ngô": ["Bệnh đốm lá ngô", "Cây khỏe mạnh"],
-        "cam": ["Bệnh vàng lá greening", "Cây khỏe mạnh"],
-        "dua_hau": ["Bệnh phấn trắng", "Cây khỏe mạnh"],
-        "ca_phe": ["Bệnh gỉ sắt", "Cây khỏe mạnh"],
-    }
-    
-    possible_diseases = diseases_by_plant.get(plant_type.lower(), ["Cây khỏe mạnh"])
-    disease = random.choice(possible_diseases)
-    confidence = round(random.uniform(0.75, 0.98), 3)
-    
-    disease_info = DISEASE_ADVICE.get(disease, DISEASE_ADVICE["Cây khỏe mạnh"])
-    
-    return {
-        "success": True,
-        "disease": disease,
-        "confidence": confidence,
-        "description": disease_info["description"],
-        "treatment": disease_info["treatment"]
-    }
+# Thêm một fallback cho các bệnh chưa có trong dict
+def get_disease_advice(disease_name):
+    """Lấy advice cho bệnh, nếu không có thì trả về mặc định"""
+    if disease_name in DISEASE_ADVICE:
+        return DISEASE_ADVICE[disease_name]
+    else:
+        return {
+            "description": f"Phát hiện {disease_name} trên cây trồng của bạn. Vui lòng tham khảo ý kiến chuyên gia.",
+            "treatment": ["Quan sát thêm triệu chứng", "Tham khảo cán bộ nông nghiệp địa phương", "Chụp ảnh rõ hơn để chẩn đoán chính xác"]
+        }
 
 @app.route('/api/predict', methods=['POST'])
 def api_predict():
-    """API dự đoán bệnh cây"""
+    """API dự đoán bệnh cây dùng AI thật"""
     plant_type = request.form.get('plant')
     
     if not plant_type:
@@ -501,9 +502,14 @@ def api_predict():
         else:
             return jsonify({"success": False, "message": "Vui lòng upload hoặc chụp ảnh"})
         
-        # Dự đoán
-        result = predict_disease_mock(plant_type)
+        # ========== THAY THẾ: Dùng AI thật từ predict.py ==========
+        result = predict_disease(filepath, plant_type)
         
+        if result["status"] == "error":
+            return jsonify({"success": False, "message": result["message"]})
+        
+        # Lấy thông tin điều trị từ DISEASE_ADVICE (vẫn giữ phần advice cũ)
+        disease_info = get_disease_advice(result["disease"])        
         # Lưu lịch sử nếu đã đăng nhập
         if 'user_id' in session:
             conn = get_db()
@@ -519,9 +525,9 @@ def api_predict():
             "success": True,
             "plant_type": plant_type,
             "disease": result['disease'],
-            "confidence": result['confidence'],
-            "description": result['description'],
-            "treatment": result['treatment']
+            "confidence": round(result['confidence'], 2),  
+            "description": disease_info["description"],
+            "treatment": disease_info["treatment"]
         })
         
     except Exception as e:

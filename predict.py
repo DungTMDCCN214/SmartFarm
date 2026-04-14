@@ -1,4 +1,4 @@
-from importlib.resources import path
+
 
 import cv2
 import numpy as np
@@ -134,7 +134,7 @@ def predict_disease(image_path, plant_type):
             "status": "success",
             "plant_type": plant_type,
             "disease": disease_name,
-            "confidence": round(confidence * 100, 2)
+            "confidence": confidence
         }
         
     except Exception as e:
@@ -144,7 +144,7 @@ def predict_disease(image_path, plant_type):
         }
 # if __name__ == "__main__":
 #     # Giả sử bạn có một tấm ảnh test
-#     test_image = "D:/TTCS/Dataset/benh-than-thu-(1).jpg"
+#     test_image = r"F:\Benh_loai_cay\Cay_cam\benh_loet\blurred_IMG_20230630_201750.jpg"
 
-#     kq = predict_disease(test_image, "oi")
+#     kq = predict_disease(test_image, "cam")
 #     print(kq)
