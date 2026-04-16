@@ -110,5 +110,5 @@ def init_db():
             ''', ('demo', 'demo@smartfarm.com', '123456', 'Người dùng demo'))
             print("✅ Đã thêm tài khoản demo: demo / 123456")
         
-        conn.commit()
+        
         print("✅ Database đã được khởi tạo thành công!")

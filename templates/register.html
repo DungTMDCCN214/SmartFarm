@@ -166,7 +166,6 @@
         font-size: 0.9rem;
       }
 
-      /* Responsive */
       @media (max-width: 768px) {
         .register-card {
           padding: 30px 20px;
@@ -331,7 +330,8 @@
     </div>
 
     <script>
-      // Check password strength
+      const API_BASE = window.location.origin;
+
       function checkPasswordStrength() {
         const password = document.getElementById("password").value;
         const strengthBar = document.getElementById("strengthBar");
@@ -355,7 +355,6 @@
         }
       }
 
-      // Check password match
       function checkPasswordMatch() {
         const password = document.getElementById("password").value;
         const confirm = document.getElementById("confirmPassword").value;
@@ -379,27 +378,42 @@
         }
       }
 
-      // Toggle password visibility
       function togglePassword(fieldId) {
         const field = document.getElementById(fieldId);
         const type = field.type === "password" ? "text" : "password";
         field.type = type;
       }
 
-      // Validate username
       function validateUsername(username) {
         const regex = /^[a-zA-Z0-9]{5,20}$/;
         return regex.test(username);
       }
 
-      // Validate email
       function validateEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
       }
 
-      // Handle registration
-      function handleRegister(event) {
+      function showAlert(message, type) {
+        const existingAlert = document.querySelector(".alert-custom");
+        if (existingAlert) existingAlert.remove();
+
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type === "success" ? "success" : type === "warning" ? "warning" : "danger"} alert-custom mt-3`;
+        alertDiv.innerHTML = `
+          <i class="fas ${type === "success" ? "fa-check-circle" : type === "warning" ? "fa-exclamation-triangle" : "fa-times-circle"}"></i>
+          ${message}
+        `;
+
+        const form = document.getElementById("registerForm");
+        form.parentNode.insertBefore(alertDiv, form.nextSibling);
+
+        setTimeout(() => {
+          if (alertDiv) alertDiv.remove();
+        }, 3000);
+      }
+
+      async function handleRegister(event) {
         event.preventDefault();
 
         const fullname = document.getElementById("fullname").value.trim();
@@ -410,7 +424,6 @@
         const phone = document.getElementById("phone").value.trim();
         const termsChecked = document.getElementById("termsCheck").checked;
 
-        // Validation
         if (!fullname) {
           showAlert("Vui lòng nhập họ và tên!", "warning");
           return;
@@ -441,73 +454,44 @@
           return;
         }
 
-        // Check if user already exists
-        const users = JSON.parse(localStorage.getItem("users") || "[]");
-        if (users.find((u) => u.email === email)) {
-          showAlert("Email đã được đăng ký!", "danger");
-          return;
+        const submitBtn = document.querySelector(".btn-register");
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        submitBtn.disabled = true;
+
+        try {
+          const response = await fetch(`${API_BASE}/api/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fullname: fullname,
+              username: username,
+              email: email,
+              phone: phone,
+              password: password,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            showAlert("Đăng ký thành công! Đang chuyển hướng...", "success");
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 1500);
+          } else {
+            showAlert(data.message || "Đăng ký thất bại!", "danger");
+          }
+        } catch (error) {
+          console.error("Register error:", error);
+          showAlert("Không thể kết nối đến server!", "danger");
+        } finally {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
         }
-
-        if (users.find((u) => u.username === username)) {
-          showAlert("Tên đăng nhập đã tồn tại!", "danger");
-          return;
-        }
-
-        // Save user
-        const newUser = {
-          fullname: fullname,
-          email: email,
-          username: username,
-          password: btoa(password), // Simple encode (in real app, use proper hashing)
-          phone: phone,
-          createdAt: new Date().toISOString(),
-        };
-
-        users.push(newUser);
-        localStorage.setItem("users", JSON.stringify(users));
-
-        // Auto login
-        localStorage.setItem(
-          "currentUser",
-          JSON.stringify({
-            username: username,
-            email: email,
-            fullname: fullname,
-          }),
-        );
-        localStorage.setItem("isLoggedIn", "true");
-
-        showAlert("Đăng ký thành công! Đang chuyển hướng...", "success");
-
-        setTimeout(() => {
-          window.location.href = "index.html";
-        }, 1500);
       }
 
-      // Show alert message
-      function showAlert(message, type) {
-        // Remove existing alert
-        const existingAlert = document.querySelector(".alert-custom");
-        if (existingAlert) existingAlert.remove();
-
-        // Create new alert
-        const alertDiv = document.createElement("div");
-        alertDiv.className = `alert alert-${type === "success" ? "success" : type === "warning" ? "warning" : "danger"} alert-custom mt-3`;
-        alertDiv.innerHTML = `
-                <i class="fas ${type === "success" ? "fa-check-circle" : type === "warning" ? "fa-exclamation-triangle" : "fa-times-circle"}"></i>
-                ${message}
-            `;
-
-        const form = document.getElementById("registerForm");
-        form.parentNode.insertBefore(alertDiv, form.nextSibling);
-
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-          if (alertDiv) alertDiv.remove();
-        }, 3000);
-      }
-
-      // Real-time password match check
       document
         .getElementById("confirmPassword")
         .addEventListener("keyup", checkPasswordMatch);
@@ -516,7 +500,6 @@
         checkPasswordMatch();
       });
 
-      // Check if already logged in
       if (localStorage.getItem("isLoggedIn") === "true") {
         window.location.href = "index.html";
       }

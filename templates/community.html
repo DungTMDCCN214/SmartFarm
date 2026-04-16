@@ -335,6 +335,33 @@
               placeholder="Nội dung bài viết..."
             ></textarea>
           </div>
+          <div class="mb-3">
+            <label class="form-label"
+              ><i class="fas fa-image text-success"></i> Hình ảnh (tùy
+              chọn)</label
+            >
+            <input
+              type="file"
+              id="postImage"
+              class="form-control"
+              accept="image/*"
+              onchange="previewImage(this)"
+            />
+            <div id="imagePreview" class="mt-2" style="display: none">
+              <img
+                id="previewImg"
+                style="max-width: 100%; max-height: 200px; border-radius: 10px"
+              />
+              <button
+                type="button"
+                class="btn btn-sm btn-danger mt-1"
+                onclick="removeImage()"
+              >
+                Xóa ảnh
+              </button>
+            </div>
+          </div>
+
           <div class="modal-footer">
             <button class="btn btn-secondary" data-bs-dismiss="modal">
               Hủy
@@ -369,32 +396,308 @@
       let currentUser = null;
       let currentPosts = [];
 
+      const API_BASE = window.location.origin;
+
       function checkAuth() {
+        // Kiểm tra từ localStorage (sau khi login)
         const isLoggedIn = localStorage.getItem("isLoggedIn");
         if (isLoggedIn === "true") {
           currentUser = {
-            id: localStorage.getItem("user_id") || "1",
-            username: localStorage.getItem("username") || "demo",
-            fullname: localStorage.getItem("fullname") || "Người dùng demo",
+            id: localStorage.getItem("user_id"),
+            username: localStorage.getItem("username"),
+            fullname: localStorage.getItem("fullname"),
           };
           return true;
         }
         return false;
       }
 
-      function loadPostsFromLocal() {
-        return JSON.parse(localStorage.getItem("community_posts") || "[]");
-      }
-
-      function savePostsToLocal(posts) {
-        localStorage.setItem("community_posts", JSON.stringify(posts));
-      }
-
-      function loadPosts() {
+      async function loadPosts() {
         document.getElementById("loading").style.display = "block";
-        currentPosts = loadPostsFromLocal();
-        displayPosts();
-        document.getElementById("loading").style.display = "none";
+        try {
+          const response = await fetch(`${API_BASE}/api/posts`);
+          const posts = await response.json();
+          currentPosts = posts;
+          displayPosts();
+        } catch (error) {
+          console.error("Lỗi tải bài viết:", error);
+          showError("Không thể tải bài viết!");
+        } finally {
+          document.getElementById("loading").style.display = "none";
+        }
+      }
+
+      async function createPost() {
+        if (!checkAuth()) {
+          alert("Vui lòng đăng nhập để đăng bài!");
+          window.location.href = "/login";
+          return;
+        }
+
+        const title = document.getElementById("postTitle").value.trim();
+        const content = document.getElementById("postContent").value.trim();
+        const imageFile = document.getElementById("postImage").files[0];
+
+        if (!title || !content) {
+          alert("Vui lòng nhập đầy đủ tiêu đề và nội dung!");
+          return;
+        }
+
+        // Tạo FormData để gửi cả text và file
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("content", content);
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/api/posts`, {
+            method: "POST",
+            body: formData, // KHÔNG set Content-Type, browser tự động
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            alert("Đăng bài thành công!");
+            // Reset form
+            document.getElementById("postTitle").value = "";
+            document.getElementById("postContent").value = "";
+            document.getElementById("postImage").value = "";
+            document.getElementById("imagePreview").style.display = "none";
+            // Đóng modal
+            bootstrap.Modal.getInstance(
+              document.getElementById("createPostModal"),
+            ).hide();
+            // Tải lại danh sách bài viết
+            loadPosts();
+          } else {
+            alert(data.message || "Đăng bài thất bại!");
+          }
+        } catch (error) {
+          console.error("Lỗi đăng bài:", error);
+          alert("Không thể kết nối đến server!");
+        }
+      }
+
+      // Thêm hàm preview ảnh
+      function previewImage(input) {
+        const preview = document.getElementById("imagePreview");
+        const previewImg = document.getElementById("previewImg");
+
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            previewImg.src = e.target.result;
+            preview.style.display = "block";
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      // Thêm hàm xóa ảnh
+      function removeImage() {
+        document.getElementById("postImage").value = "";
+        document.getElementById("imagePreview").style.display = "none";
+        document.getElementById("previewImg").src = "";
+      }
+
+      async function toggleLike(postId) {
+        if (!checkAuth()) {
+          alert("Vui lòng đăng nhập để thả tim!");
+          window.location.href = "/login";
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/api/posts/${postId}/like`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (response.ok) {
+            loadPosts(); // Tải lại để cập nhật số like
+          }
+        } catch (error) {
+          console.error("Lỗi like:", error);
+        }
+      }
+
+      async function deletePost(postId) {
+        if (!confirm("Bạn có chắc muốn xóa bài viết này?")) return;
+
+        // Thêm API xóa (nếu chưa có trong backend)
+        try {
+          const response = await fetch(`${API_BASE}/api/posts/${postId}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            alert("Xóa bài viết thành công!");
+            loadPosts();
+          }
+        } catch (error) {
+          console.error("Lỗi xóa:", error);
+          alert("Không thể xóa bài viết!");
+        }
+      }
+
+      async function addComment(postId) {
+        if (!checkAuth()) {
+          alert("Vui lòng đăng nhập để bình luận!");
+          window.location.href = "/login";
+          return;
+        }
+
+        const input = document.getElementById(`comment-input-${postId}`);
+        const content = input.value.trim();
+        if (!content) return;
+
+        // Thêm API comment (cần thêm trong backend)
+        try {
+          const response = await fetch(
+            `${API_BASE}/api/posts/${postId}/comments`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ content: content }),
+            },
+          );
+
+          if (response.ok) {
+            input.value = "";
+            loadPosts(); // Tải lại để hiển thị comment mới
+          }
+        } catch (error) {
+          console.error("Lỗi comment:", error);
+        }
+      }
+
+      function displayPosts() {
+        const container = document.getElementById("postsContainer");
+        if (!currentPosts || currentPosts.length === 0) {
+          container.innerHTML = `<div class="no-posts"><i class="fas fa-comments fa-3x"></i><p class="mt-2">Chưa có bài viết nào</p><button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-plus"></i> Đăng bài đầu tiên</button></div>`;
+          return;
+        }
+
+        container.innerHTML = currentPosts
+          .map((post) => {
+            const authorName = post.fullname || post.username || "Người dùng";
+            const avatarColor = getAvatarColor(authorName);
+            const avatarInitial = authorName.charAt(0).toUpperCase();
+            const timeAgo = getTimeAgo(post.created_at);
+
+            // Xử lý đường dẫn ảnh
+            const imageHtml = post.image_path
+              ? `<div class="post-image mt-2">
+                    <img src="/static/uploads/${post.image_path}" 
+                         style="max-width: 100%; max-height: 300px; border-radius: 10px; cursor: pointer;" 
+                         onclick="window.open(this.src)" 
+                         alt="Hình ảnh bài viết" />
+                </div>`
+              : "";
+
+            return `
+                <div class="post-card" data-post-id="${post.id}">
+                    <div class="post-header">
+                        <div class="avatar" style="background-color: ${avatarColor}">${avatarInitial}</div>
+                        <div>
+                            <div class="author-name">${escapeHtml(authorName)}</div>
+                            <div class="post-time"><i class="far fa-clock"></i> ${timeAgo}</div>
+                        </div>
+                    </div>
+                    <div class="post-title">${escapeHtml(post.title)}</div>
+                    <div class="post-content">${escapeHtml(post.content.substring(0, 300))}${post.content.length > 300 ? "..." : ""}</div>
+                    ${imageHtml}
+                    <div class="post-actions">
+                        <button class="action-btn" onclick="toggleLike(${post.id})">
+                            <i class="fas fa-heart"></i> <span class="like-count">${post.likes || 0}</span>
+                        </button>
+                        <button class="action-btn" onclick="toggleComments(${post.id})">
+                            <i class="fas fa-comment"></i> Bình luận
+                        </button>
+                        ${
+                          currentUser && currentUser.id == post.user_id
+                            ? `<button class="action-btn text-danger" onclick="deletePost(${post.id})">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>`
+                            : ""
+                        }
+                    </div>
+                    <div class="comments-section" id="comments-${post.id}" style="display: none;">
+                        <div id="comments-list-${post.id}"></div>
+                        ${
+                          currentUser
+                            ? `<div class="comment-input">
+                                <input type="text" id="comment-input-${post.id}" 
+                                       class="form-control form-control-sm" 
+                                       placeholder="Viết bình luận..." 
+                                       onkeypress="if(event.key==='Enter') addComment(${post.id})" />
+                                <button class="btn btn-sm btn-success" onclick="addComment(${post.id})">
+                                    <i class="fas fa-paper-plane"></i> Gửi
+                                </button>
+                            </div>`
+                            : `<div class="text-center text-muted small py-2">
+                                <a href="/login">Đăng nhập</a> để bình luận
+                            </div>`
+                        }
+                    </div>
+                </div>
+            `;
+          })
+          .join("");
+      }
+      function toggleComments(postId) {
+        const div = document.getElementById(`comments-${postId}`);
+        if (div.style.display === "none") {
+          div.style.display = "block";
+          loadComments(postId);
+        } else {
+          div.style.display = "none";
+        }
+      }
+
+      async function loadComments(postId) {
+        try {
+          const response = await fetch(
+            `${API_BASE}/api/posts/${postId}/comments`,
+          );
+          const comments = await response.json();
+          const commentsList = document.getElementById(
+            `comments-list-${postId}`,
+          );
+          if (commentsList) {
+            commentsList.innerHTML = renderComments(comments, postId);
+          }
+        } catch (error) {
+          console.error("Lỗi tải comment:", error);
+        }
+      }
+
+      function renderComments(comments, postId) {
+        if (!comments || comments.length === 0) {
+          return '<div class="text-muted text-center small py-2">Chưa có bình luận nào</div>';
+        }
+        return comments
+          .map((comment) => {
+            const authorName =
+              comment.fullname || comment.username || "Người dùng";
+            const avatarColor = getAvatarColor(authorName);
+            const avatarInitial = authorName.charAt(0).toUpperCase();
+            const timeAgo = getTimeAgo(comment.created_at);
+            return `
+              <div class="comment-item">
+                  <div class="comment-avatar" style="background-color: ${avatarColor}">${avatarInitial}</div>
+                  <div class="comment-content">
+                      <div class="comment-author">${escapeHtml(authorName)}</div>
+                      <div class="comment-text">${escapeHtml(comment.content)}</div>
+                      <div class="comment-time">${timeAgo}</div>
+                  </div>
+              </div>
+          `;
+          })
+          .join("");
       }
 
       function searchPosts() {
@@ -402,7 +705,7 @@
           .getElementById("searchInput")
           .value.toLowerCase();
         if (!keyword) {
-          displayPosts();
+          loadPosts();
           return;
         }
         const filtered = currentPosts.filter(
@@ -416,7 +719,7 @@
       function displayPostsWithData(posts) {
         const container = document.getElementById("postsContainer");
         if (!posts || posts.length === 0) {
-          container.innerHTML = `<div class="no-posts"><i class="fas fa-comments fa-3x"></i><p class="mt-2">Chưa có bài viết nào</p><button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createPostModal"><i class="fas fa-plus"></i> Đăng bài đầu tiên</button></div>`;
+          container.innerHTML = `<div class="no-posts"><i class="fas fa-search fa-3x"></i><p class="mt-2">Không tìm thấy bài viết nào</p></div>`;
           return;
         }
 
@@ -427,160 +730,41 @@
             const avatarInitial = authorName.charAt(0).toUpperCase();
             const timeAgo = getTimeAgo(post.created_at);
 
+            // Xử lý hiển thị ảnh nếu có
+            const imageHtml = post.image_path
+              ? `<div class="post-image mt-2">
+                    <img src="/static/uploads/${post.image_path}" 
+                         style="max-width: 100%; max-height: 300px; border-radius: 10px; cursor: pointer;" 
+                         onclick="window.open(this.src)" 
+                         alt="Hình ảnh bài viết" />
+                </div>`
+              : "";
+
             return `
-                    <div class="post-card" data-post-id="${post.id}">
-                        <div class="post-header">
-                            <div class="avatar" style="background-color: ${avatarColor}">${avatarInitial}</div>
-                            <div>
-                                <div class="author-name">${escapeHtml(authorName)}</div>
-                                <div class="post-time"><i class="far fa-clock"></i> ${timeAgo}</div>
-                            </div>
-                        </div>
-                        <div class="post-title">${escapeHtml(post.title)}</div>
-                        <div class="post-content">${escapeHtml(post.content.substring(0, 300))}${post.content.length > 300 ? "..." : ""}</div>
-                        <div class="post-actions">
-                            <button class="action-btn" onclick="toggleLike(${post.id})"><i class="fas fa-heart"></i> <span class="like-count">${post.likes || 0}</span></button>
-                            <button class="action-btn" onclick="toggleComments(${post.id})"><i class="fas fa-comment"></i> Bình luận (${(post.comments || []).length})</button>
-                            ${currentUser && (currentUser.id == post.user_id || currentUser.username === "demo") ? `<button class="action-btn text-danger" onclick="deletePost(${post.id})"><i class="fas fa-trash"></i> Xóa</button>` : ""}
-                        </div>
-                        <div class="comments-section" id="comments-${post.id}" style="display: none;">
-                            <div id="comments-list-${post.id}">${renderComments(post.comments || [], post.id)}</div>
-                            ${currentUser ? `<div class="comment-input"><input type="text" id="comment-input-${post.id}" class="form-control form-control-sm" placeholder="Viết bình luận..."><button class="btn btn-sm btn-success" onclick="addComment(${post.id})">Gửi</button></div>` : `<div class="text-center text-muted small"><a href="/login">Đăng nhập</a> để bình luận</div>`}
+                <div class="post-card" data-post-id="${post.id}">
+                    <div class="post-header">
+                        <div class="avatar" style="background-color: ${avatarColor}">${avatarInitial}</div>
+                        <div>
+                            <div class="author-name">${escapeHtml(authorName)}</div>
+                            <div class="post-time"><i class="far fa-clock"></i> ${timeAgo}</div>
                         </div>
                     </div>
-                `;
-          })
-          .join("");
-      }
-
-      function renderComments(comments, postId) {
-        if (!comments || comments.length === 0)
-          return '<div class="text-muted text-center small py-2">Chưa có bình luận nào</div>';
-        return comments
-          .map((comment) => {
-            const authorName =
-              comment.fullname || comment.username || "Người dùng";
-            const avatarColor = getAvatarColor(authorName);
-            const avatarInitial = authorName.charAt(0).toUpperCase();
-            const timeAgo = getTimeAgo(comment.created_at);
-            return `
-                    <div class="comment-item">
-                        <div class="comment-avatar" style="background-color: ${avatarColor}">${avatarInitial}</div>
-                        <div class="comment-content">
-                            <div class="comment-author">${escapeHtml(authorName)}</div>
-                            <div class="comment-text">${escapeHtml(comment.content)}</div>
-                            <div class="comment-time">${timeAgo}</div>
-                        </div>
-                        ${currentUser && (currentUser.id == comment.user_id || currentUser.username === "demo") ? `<button class="btn btn-sm btn-link text-danger" onclick="deleteComment(${comment.id}, ${postId})"><i class="fas fa-times"></i></button>` : ""}
+                    <div class="post-title">${escapeHtml(post.title)}</div>
+                    <div class="post-content">${escapeHtml(post.content.substring(0, 300))}${post.content.length > 300 ? "..." : ""}</div>
+                    ${imageHtml}
+                    <div class="post-actions">
+                        <button class="action-btn" onclick="toggleLike(${post.id})">
+                            <i class="fas fa-heart"></i> <span class="like-count">${post.likes || 0}</span>
+                        </button>
+                        <button class="action-btn" onclick="toggleComments(${post.id})">
+                            <i class="fas fa-comment"></i> Bình luận
+                        </button>
                     </div>
-                `;
+                    <div class="comments-section" id="comments-${post.id}" style="display: none;"></div>
+                </div>
+            `;
           })
           .join("");
-      }
-
-      function displayPosts() {
-        displayPostsWithData(currentPosts);
-      }
-
-      function createPost() {
-        if (!checkAuth()) {
-          alert("Vui lòng đăng nhập để đăng bài!");
-          window.location.href = "/login";
-          return;
-        }
-        const title = document.getElementById("postTitle").value.trim();
-        const content = document.getElementById("postContent").value.trim();
-        if (!title || !content) {
-          alert("Vui lòng nhập đầy đủ tiêu đề và nội dung!");
-          return;
-        }
-
-        const newPost = {
-          id: Date.now(),
-          user_id: currentUser.id,
-          username: currentUser.username,
-          fullname: currentUser.fullname,
-          title: title,
-          content: content,
-          likes: 0,
-          comments: [],
-          created_at: new Date().toISOString(),
-        };
-        currentPosts.unshift(newPost);
-        savePostsToLocal(currentPosts);
-        bootstrap.Modal.getInstance(
-          document.getElementById("createPostModal"),
-        ).hide();
-        document.getElementById("postTitle").value = "";
-        document.getElementById("postContent").value = "";
-        displayPosts();
-        alert("Đăng bài thành công!");
-      }
-
-      function toggleLike(postId) {
-        if (!checkAuth()) {
-          alert("Vui lòng đăng nhập để thả tim!");
-          window.location.href = "/login";
-          return;
-        }
-        const post = currentPosts.find((p) => p.id == postId);
-        if (post) {
-          post.likes = (post.likes || 0) + 1;
-          savePostsToLocal(currentPosts);
-          displayPosts();
-        }
-      }
-
-      function toggleComments(postId) {
-        const div = document.getElementById(`comments-${postId}`);
-        div.style.display = div.style.display === "none" ? "block" : "none";
-      }
-
-      function addComment(postId) {
-        if (!checkAuth()) {
-          alert("Vui lòng đăng nhập để bình luận!");
-          window.location.href = "/login";
-          return;
-        }
-        const input = document.getElementById(`comment-input-${postId}`);
-        const content = input.value.trim();
-        if (!content) return;
-
-        const post = currentPosts.find((p) => p.id == postId);
-        if (post) {
-          if (!post.comments) post.comments = [];
-          post.comments.push({
-            id: Date.now(),
-            post_id: postId,
-            user_id: currentUser.id,
-            username: currentUser.username,
-            fullname: currentUser.fullname,
-            content: content,
-            created_at: new Date().toISOString(),
-          });
-          savePostsToLocal(currentPosts);
-          input.value = "";
-          document.getElementById(`comments-list-${postId}`).innerHTML =
-            renderComments(post.comments, postId);
-        }
-      }
-
-      function deletePost(postId) {
-        if (!confirm("Bạn có chắc muốn xóa bài viết này?")) return;
-        currentPosts = currentPosts.filter((p) => p.id != postId);
-        savePostsToLocal(currentPosts);
-        displayPosts();
-      }
-
-      function deleteComment(commentId, postId) {
-        if (!confirm("Bạn có chắc muốn xóa bình luận này?")) return;
-        const post = currentPosts.find((p) => p.id == postId);
-        if (post && post.comments) {
-          post.comments = post.comments.filter((c) => c.id != commentId);
-          savePostsToLocal(currentPosts);
-          document.getElementById(`comments-list-${postId}`).innerHTML =
-            renderComments(post.comments, postId);
-        }
       }
 
       function escapeHtml(text) {
@@ -624,54 +808,14 @@
         }
       }
 
-      function initSampleData() {
-        let posts = loadPostsFromLocal();
-        if (posts.length === 0) {
-          posts = [
-            {
-              id: 1,
-              user_id: "1",
-              username: "demo",
-              fullname: "Người dùng demo",
-              title: "Chào mừng đến với cộng đồng SmartFarm!",
-              content:
-                "Đây là nơi để chúng ta chia sẻ kinh nghiệm trồng trọt, hỏi đáp về bệnh cây và cùng nhau phát triển nông nghiệp bền vững.",
-              likes: 5,
-              comments: [
-                {
-                  id: 101,
-                  post_id: 1,
-                  user_id: "2",
-                  username: "nongdan1",
-                  fullname: "Nguyễn Văn A",
-                  content: "Rất vui được tham gia cộng đồng!",
-                  created_at: new Date(Date.now() - 86400000).toISOString(),
-                },
-              ],
-              created_at: new Date(Date.now() - 172800000).toISOString(),
-            },
-            {
-              id: 2,
-              user_id: "2",
-              username: "nongdan1",
-              fullname: "Nguyễn Văn A",
-              title: "Kinh nghiệm trồng lúa sạch",
-              content:
-                "Mình đã áp dụng phương pháp trồng lúa hữu cơ, giảm phân bón hóa học, kết quả năng suất vẫn cao mà lúa lại thơm ngon hơn.",
-              likes: 3,
-              comments: [],
-              created_at: new Date(Date.now() - 259200000).toISOString(),
-            },
-          ];
-          savePostsToLocal(posts);
-        }
-        return posts;
+      function showError(message) {
+        const container = document.getElementById("postsContainer");
+        container.innerHTML = `<div class="alert alert-danger">${message}</div>`;
       }
 
       function init() {
         checkAuth();
-        currentPosts = initSampleData();
-        displayPosts();
+        loadPosts();
       }
 
       init();

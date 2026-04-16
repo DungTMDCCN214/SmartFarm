@@ -1,33 +1,33 @@
 import os
 
 class Config:
-    """Cấu hình ứng dụng - Không cần API key bên ngoài"""
+    """Cấu hình ứng dụng"""
     
-    # Flask - Dùng giá trị mặc định, không cần thay đổi
-    SECRET_KEY = 'smartfarm-secret-key-2024'  # Có thể giữ nguyên
+    # Flask
+    SECRET_KEY = 'smartfarm-secret-key-2024'
     
-    # Database
-    DATABASE_PATH = 'database.db'
+    # Database - SỬA TÊN CHO ĐÚNG
+    DATABASE_PATH = 'database.db'  # File sẽ tạo trong thư mục dự án
     
     # Upload
     UPLOAD_FOLDER = 'static/uploads'
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     
-    # Weather - Dùng mock data, không cần API key
-    USE_MOCK_WEATHER = True  # Bật chế độ dữ liệu mẫu
-    WEATHER_API_KEY = None   # Không cần key
+    # Weather - Dùng mock data
+    USE_MOCK_WEATHER = True
+    WEATHER_API_KEY = None
     
-    # AI Model - Tạm dùng mock, sau này thay bằng model thật
-    USE_MOCK_AI = True
+    # AI Model - TẮT MOCK VÌ ĐANG DÙNG AI THẬT
+    USE_MOCK_AI = False  # SỬA: False vì bạn đã tích hợp AI thật
     MODEL_PATH = 'models/plant_disease.keras'
     
-    # Weather thresholds for alerts (ngưỡng cảnh báo)
+    # Weather thresholds for alerts
     WEATHER_THRESHOLDS = {
-        "high_temp": 35,      # Nhiệt độ cao > 35°C
-        "low_temp": 15,       # Nhiệt độ thấp < 15°C
-        "high_humidity": 85,  # Độ ẩm cao > 85%
-        "strong_wind": 30,    # Gió mạnh > 30km/h
+        "high_temp": 35,
+        "low_temp": 15,
+        "high_humidity": 85,
+        "strong_wind": 30,
     }
     
     # Lời khuyên theo điều kiện thời tiết

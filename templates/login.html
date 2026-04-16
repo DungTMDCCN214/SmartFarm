@@ -89,28 +89,6 @@
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
       }
-      .social-login {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        margin-top: 20px;
-      }
-      .social-btn {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #ddd;
-        transition: all 0.3s;
-        text-decoration: none;
-        color: #666;
-      }
-      .social-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-      }
       .demo-account {
         background: #e8f5e9;
         border-radius: 12px;
@@ -130,7 +108,7 @@
 
         <form onsubmit="login(event)">
           <div class="mb-3">
-            <label class="form-label">Email / Tên đăng nhập</label>
+            <label class="form-label">Tên đăng nhập / Email</label>
             <input
               type="text"
               id="username"
@@ -161,19 +139,12 @@
         <div class="demo-account">
           <p class="mb-1 text-center"><strong>📱 Tài khoản demo</strong></p>
           <p class="mb-0 small text-center">
-            Email: <code>demo@smartfarm.com</code> hoặc <code>demo</code><br />
+            Tên đăng nhập: <code>demo</code><br />
             Mật khẩu: <code>123456</code>
           </p>
-        </div>
-
-        <div class="social-login">
-          <a href="#" class="social-btn"
-            ><i class="fab fa-google text-danger"></i
-          ></a>
-          <a href="#" class="social-btn"
-            ><i class="fab fa-facebook text-primary"></i
-          ></a>
-          <a href="#" class="social-btn"><i class="fab fa-apple"></i></a>
+          <p class="mb-0 small text-center text-muted mt-1">
+            (Đã có sẵn trong database)
+          </p>
         </div>
 
         <div class="text-center mt-4">
@@ -204,9 +175,15 @@
           <div class="modal-body">
             <input
               type="text"
-              id="regName"
+              id="regFullname"
               class="form-control mb-3"
               placeholder="Họ và tên"
+            />
+            <input
+              type="text"
+              id="regUsername"
+              class="form-control mb-3"
+              placeholder="Tên đăng nhập"
             />
             <input
               type="email"
@@ -215,10 +192,10 @@
               placeholder="Email"
             />
             <input
-              type="text"
-              id="regUsername"
+              type="tel"
+              id="regPhone"
               class="form-control mb-3"
-              placeholder="Tên đăng nhập"
+              placeholder="Số điện thoại (không bắt buộc)"
             />
             <input
               type="password"
@@ -246,101 +223,163 @@
     </div>
 
     <script>
-      function login(event) {
-        event.preventDefault();
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
+      // API URL
+      const API_BASE = window.location.origin;
 
-        // Tài khoản demo
-        if (
-          (username === "demo@smartfarm.com" || username === "demo") &&
-          password === "123456"
-        ) {
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("user_id", "1");
-          localStorage.setItem("username", "demo");
-          localStorage.setItem("fullname", "Người dùng demo");
-          alert("Đăng nhập thành công!");
-          window.location.href = "/";
+      async function login(event) {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        const remember = document.getElementById("remember").checked;
+
+        if (!username || !password) {
+          alert("Vui lòng nhập đầy đủ thông tin!");
           return;
         }
 
-        // Tài khoản đã đăng ký
-        const users = JSON.parse(localStorage.getItem("users") || "[]");
-        const user = users.find(
-          (u) =>
-            (u.email === username || u.username === username) &&
-            u.password === password,
-        );
+        // Hiển thị loading
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        submitBtn.disabled = true;
 
-        if (user) {
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("user_id", user.id);
-          localStorage.setItem("username", user.username);
-          localStorage.setItem("fullname", user.fullname);
-          alert("Đăng nhập thành công!");
-          window.location.href = "/";
-        } else {
-          alert(
-            "Sai email hoặc mật khẩu!\n\n📱 Tài khoản demo: demo@smartfarm.com\n🔑 Mật khẩu: 123456",
-          );
+        try {
+          const response = await fetch(`${API_BASE}/api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username, password: password }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Lưu thông tin đăng nhập
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("user_id", data.user?.id || data.user_id);
+            localStorage.setItem("username", data.user?.username || username);
+            localStorage.setItem("fullname", data.user?.fullname || "");
+
+            if (remember) {
+              localStorage.setItem("remembered_user", username);
+            } else {
+              localStorage.removeItem("remembered_user");
+            }
+
+            alert("Đăng nhập thành công!");
+            window.location.href = "/";
+          } else {
+            alert(data.message || "Sai tên đăng nhập hoặc mật khẩu!");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Không thể kết nối đến server. Vui lòng thử lại sau!");
+        } finally {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
         }
       }
 
       function showRegister() {
+        // Reset form
+        document.getElementById("regFullname").value = "";
+        document.getElementById("regUsername").value = "";
+        document.getElementById("regEmail").value = "";
+        document.getElementById("regPhone").value = "";
+        document.getElementById("regPassword").value = "";
+        document.getElementById("regConfirm").value = "";
+
         new bootstrap.Modal(document.getElementById("registerModal")).show();
       }
 
-      function register() {
-        const fullname = document.getElementById("regName").value;
-        const email = document.getElementById("regEmail").value;
-        const username = document.getElementById("regUsername").value;
+      async function register() {
+        const fullname = document.getElementById("regFullname").value.trim();
+        const username = document.getElementById("regUsername").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const phone = document.getElementById("regPhone").value.trim();
         const password = document.getElementById("regPassword").value;
         const confirm = document.getElementById("regConfirm").value;
 
-        if (!fullname || !email || !username || !password) {
-          alert("Vui lòng điền đầy đủ thông tin!");
+        // Kiểm tra dữ liệu
+        if (!fullname) {
+          alert("Vui lòng nhập họ và tên!");
           return;
         }
-
+        if (!username) {
+          alert("Vui lòng nhập tên đăng nhập!");
+          return;
+        }
+        if (!email) {
+          alert("Vui lòng nhập email!");
+          return;
+        }
+        if (!password) {
+          alert("Vui lòng nhập mật khẩu!");
+          return;
+        }
         if (password !== confirm) {
           alert("Mật khẩu xác nhận không khớp!");
           return;
         }
-
-        const users = JSON.parse(localStorage.getItem("users") || "[]");
-
-        if (users.find((u) => u.email === email)) {
-          alert("Email đã được đăng ký!");
+        if (password.length < 6) {
+          alert("Mật khẩu phải có ít nhất 6 ký tự!");
           return;
         }
 
-        if (users.find((u) => u.username === username)) {
-          alert("Tên đăng nhập đã tồn tại!");
-          return;
+        // Hiển thị loading
+        const registerBtn = event.target;
+        const originalText = registerBtn.innerHTML;
+        registerBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        registerBtn.disabled = true;
+
+        try {
+          const response = await fetch(`${API_BASE}/api/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fullname: fullname,
+              username: username,
+              email: email,
+              phone: phone,
+              password: password,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            alert("Đăng ký thành công! Vui lòng đăng nhập.");
+            // Đóng modal
+            bootstrap.Modal.getInstance(
+              document.getElementById("registerModal"),
+            ).hide();
+            // Điền tên đăng nhập vào form
+            document.getElementById("username").value = username;
+            document.getElementById("password").value = "";
+          } else {
+            alert(data.message || "Đăng ký thất bại!");
+          }
+        } catch (error) {
+          console.error("Register error:", error);
+          alert("Không thể kết nối đến server. Vui lòng thử lại sau!");
+        } finally {
+          registerBtn.innerHTML = originalText;
+          registerBtn.disabled = false;
         }
-
-        const newUser = {
-          id: Date.now(),
-          fullname: fullname,
-          email: email,
-          username: username,
-          password: password,
-        };
-
-        users.push(newUser);
-        localStorage.setItem("users", JSON.stringify(users));
-
-        alert("Đăng ký thành công! Vui lòng đăng nhập.");
-        bootstrap.Modal.getInstance(
-          document.getElementById("registerModal"),
-        ).hide();
-        document.getElementById("username").value = username;
       }
 
       // Kiểm tra đã đăng nhập chưa
       if (localStorage.getItem("isLoggedIn") === "true") {
         window.location.href = "/";
+      }
+
+      // Tự động điền tên đăng nhập đã ghi nhớ
+      const rememberedUser = localStorage.getItem("remembered_user");
+      if (rememberedUser) {
+        document.getElementById("username").value = rememberedUser;
+        document.getElementById("remember").checked = true;
       }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

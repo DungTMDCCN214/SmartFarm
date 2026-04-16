@@ -6,18 +6,21 @@ import tensorflow as tf
 import os
 
 # Cấu hình Class Names và Model cho từng loại cây
+
+
 PLANT_CONFIG = {
     "cam": {
-        "model_path": "F:/TTCS/APP/models/model_cay_cam_finetuned.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_cam_model.keras",
         "class_names": [
-            "benh_da_dang", 
+            "Vang_la_gan_xanh",
             "benh_loet", 
             "la_khoe", 
             "thieu_dinh_duong"
+            
         ]
     },
     "chanh": {
-        "model_path": "F:/TTCS/APP/models/model_cay_chanh_finetuned.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_chanh_model.keras",
         "class_names": [
             "La_khoe", 
             "La_vang_thoi_re", 
@@ -26,7 +29,7 @@ PLANT_CONFIG = {
         ]
     },
     "dua_hau": {
-        "model_path": "F:/TTCS/APP/models/model_cay_dua_hau_finetuned.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_dua_hau_model.keras",
         "class_names": [
             "Benh_suong_mai", 
             "Benh_than_thu", 
@@ -35,7 +38,7 @@ PLANT_CONFIG = {
         ]
     },
     "le": {
-        "model_path": "F:/TTCS/APP/models/model_cay_le_finetuned.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_le_model.keras",
         "class_names": [
             "Chay_la", 
             "Dom_la", 
@@ -44,7 +47,7 @@ PLANT_CONFIG = {
         ]
     },
     "oi": {
-        "model_path": "F:/TTCS/APP/models/model_cay_oi_finetuned.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_oi_model.keras",
         "class_names": [
             "La_khoe", 
             "Loet", 
@@ -53,7 +56,7 @@ PLANT_CONFIG = {
         ]
     },
     "xoai": {
-        "model_path": "F:/TTCS/APP/models/model_cay_xoai_finetuned.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_xoai_model.keras",
         "class_names": [
             "Benh_loet_do_vi_khuan", 
             "Benh_phan_trang", 
@@ -63,6 +66,33 @@ PLANT_CONFIG = {
             "La_khoe", 
             "Nam_bo_hong", 
             "Ruoi_gay_u"
+        ]
+    },
+    "thanh_long": {
+        "model_path": r"F:/TTCS/APP/models/dragonfruit_model.keras",
+        "class_names": [
+            "benh_dom_den",
+            "benh_dom_nau",
+            "benh_thoi_re",
+            "la_khoe_manh"
+        ]
+    },
+    "buoi": {
+        "model_path": r"F:/TTCS/APP/models/citrus_model.keras",
+        "class_names": [
+            "benh_dom_den",
+            "benh_loet_vikhuan",
+            "benh_vang_la_gan_xanh",
+            "la_khoe_manh"
+        ]
+    },
+    "vai": {
+        "model_path": r"F:/TTCS/APP/models/lychee_model.keras",
+        "class_names": [
+            "benh_phan_trang",
+            "benh_suong_mai",
+            "benh_than_thu",
+            "la_khoe_manh"
         ]
     }
 }
@@ -144,7 +174,7 @@ def predict_disease(image_path, plant_type):
         }
 # if __name__ == "__main__":
 #     # Giả sử bạn có một tấm ảnh test
-#     test_image = r"F:\Benh_loai_cay\Cay_cam\benh_loet\blurred_IMG_20230630_201750.jpg"
+#     test_image = r"F:\Benh_loai_cay\Cay_cam\la_khoe_manh\flipped_horizontal_IMG_20230630_192958.jpg"
 
 #     kq = predict_disease(test_image, "cam")
 #     print(kq)
