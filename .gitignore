@@ -1,5 +1,0 @@
-__pycache__/
-*.keras
-*.h5
-*.onnx
-static/uploads/
