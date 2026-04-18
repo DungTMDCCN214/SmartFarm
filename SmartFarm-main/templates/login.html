@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Đăng nhập - SmartFarm</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-green: #2e7d32;
+        --secondary-green: #4caf50;
+      }
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+      }
+      .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .login-card {
+        background: white;
+        border-radius: 30px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 450px;
+        width: 100%;
+        animation: fadeInUp 0.6s;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .logo i {
+        font-size: 60px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .logo h3 {
+        color: var(--primary-green);
+        margin-top: 10px;
+      }
+      .form-control {
+        border-radius: 12px;
+        padding: 12px 15px;
+      }
+      .btn-login {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+      }
+      .demo-account {
+        background: #e8f5e9;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-card">
+        <div class="logo">
+          <i class="fas fa-leaf"></i>
+          <h3>SmartFarm</h3>
+          <p class="text-muted">Nông nghiệp thông minh</p>
+        </div>
+
+        <form onsubmit="login(event)">
+          <div class="mb-3">
+            <label class="form-label">Tên đăng nhập / Email</label>
+            <input
+              type="text"
+              id="username"
+              class="form-control"
+              placeholder="Nhập email hoặc tên đăng nhập"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <input
+              type="password"
+              id="password"
+              class="form-control"
+              placeholder="Nhập mật khẩu"
+              required
+            />
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="remember" />
+            <label class="form-check-label">Ghi nhớ đăng nhập</label>
+          </div>
+          <button type="submit" class="btn btn-success w-100 btn-login">
+            <i class="fas fa-sign-in-alt"></i> Đăng nhập
+          </button>
+        </form>
+
+        <div class="demo-account">
+          <p class="mb-1 text-center"><strong>📱 Tài khoản demo</strong></p>
+          <p class="mb-0 small text-center">
+            Tên đăng nhập: <code>demo</code><br />
+            Mật khẩu: <code>123456</code>
+          </p>
+          <p class="mb-0 small text-center text-muted mt-1">
+            (Đã có sẵn trong database)
+          </p>
+        </div>
+
+        <div class="text-center mt-4">
+          <p class="mb-0">
+            Chưa có tài khoản?
+            <a href="#" onclick="showRegister()" class="text-success"
+              >Đăng ký ngay</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">
+              <i class="fas fa-user-plus"></i> Đăng ký tài khoản
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="text"
+              id="regFullname"
+              class="form-control mb-3"
+              placeholder="Họ và tên"
+            />
+            <input
+              type="text"
+              id="regUsername"
+              class="form-control mb-3"
+              placeholder="Tên đăng nhập"
+            />
+            <input
+              type="email"
+              id="regEmail"
+              class="form-control mb-3"
+              placeholder="Email"
+            />
+            <input
+              type="tel"
+              id="regPhone"
+              class="form-control mb-3"
+              placeholder="Số điện thoại (không bắt buộc)"
+            />
+            <input
+              type="password"
+              id="regPassword"
+              class="form-control mb-3"
+              placeholder="Mật khẩu"
+            />
+            <input
+              type="password"
+              id="regConfirm"
+              class="form-control"
+              placeholder="Xác nhận mật khẩu"
+            />
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Hủy
+            </button>
+            <button class="btn btn-success" onclick="register()">
+              Đăng ký
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // API URL
+      const API_BASE = window.location.origin;
+
+      async function login(event) {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+        const remember = document.getElementById("remember").checked;
+
+        if (!username || !password) {
+          alert("Vui lòng nhập đầy đủ thông tin!");
+          return;
+        }
+
+        // Hiển thị loading
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        submitBtn.disabled = true;
+
+        try {
+          const response = await fetch(`${API_BASE}/api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username, password: password }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Lưu thông tin đăng nhập
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("user_id", data.user?.id || data.user_id);
+            localStorage.setItem("username", data.user?.username || username);
+            localStorage.setItem("fullname", data.user?.fullname || "");
+
+            if (remember) {
+              localStorage.setItem("remembered_user", username);
+            } else {
+              localStorage.removeItem("remembered_user");
+            }
+
+            alert("Đăng nhập thành công!");
+            window.location.href = "/";
+          } else {
+            alert(data.message || "Sai tên đăng nhập hoặc mật khẩu!");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Không thể kết nối đến server. Vui lòng thử lại sau!");
+        } finally {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }
+      }
+
+      function showRegister() {
+        // Reset form
+        document.getElementById("regFullname").value = "";
+        document.getElementById("regUsername").value = "";
+        document.getElementById("regEmail").value = "";
+        document.getElementById("regPhone").value = "";
+        document.getElementById("regPassword").value = "";
+        document.getElementById("regConfirm").value = "";
+
+        new bootstrap.Modal(document.getElementById("registerModal")).show();
+      }
+
+      async function register() {
+        const fullname = document.getElementById("regFullname").value.trim();
+        const username = document.getElementById("regUsername").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const phone = document.getElementById("regPhone").value.trim();
+        const password = document.getElementById("regPassword").value;
+        const confirm = document.getElementById("regConfirm").value;
+
+        // Kiểm tra dữ liệu
+        if (!fullname) {
+          alert("Vui lòng nhập họ và tên!");
+          return;
+        }
+        if (!username) {
+          alert("Vui lòng nhập tên đăng nhập!");
+          return;
+        }
+        if (!email) {
+          alert("Vui lòng nhập email!");
+          return;
+        }
+        if (!password) {
+          alert("Vui lòng nhập mật khẩu!");
+          return;
+        }
+        if (password !== confirm) {
+          alert("Mật khẩu xác nhận không khớp!");
+          return;
+        }
+        if (password.length < 6) {
+          alert("Mật khẩu phải có ít nhất 6 ký tự!");
+          return;
+        }
+
+        // Hiển thị loading
+        const registerBtn = event.target;
+        const originalText = registerBtn.innerHTML;
+        registerBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        registerBtn.disabled = true;
+
+        try {
+          const response = await fetch(`${API_BASE}/api/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fullname: fullname,
+              username: username,
+              email: email,
+              phone: phone,
+              password: password,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            alert("Đăng ký thành công! Vui lòng đăng nhập.");
+            // Đóng modal
+            bootstrap.Modal.getInstance(
+              document.getElementById("registerModal"),
+            ).hide();
+            // Điền tên đăng nhập vào form
+            document.getElementById("username").value = username;
+            document.getElementById("password").value = "";
+          } else {
+            alert(data.message || "Đăng ký thất bại!");
+          }
+        } catch (error) {
+          console.error("Register error:", error);
+          alert("Không thể kết nối đến server. Vui lòng thử lại sau!");
+        } finally {
+          registerBtn.innerHTML = originalText;
+          registerBtn.disabled = false;
+        }
+      }
+
+      // Kiểm tra đã đăng nhập chưa
+      if (localStorage.getItem("isLoggedIn") === "true") {
+        window.location.href = "/";
+      }
+
+      // Tự động điền tên đăng nhập đã ghi nhớ
+      const rememberedUser = localStorage.getItem("remembered_user");
+      if (rememberedUser) {
+        document.getElementById("username").value = rememberedUser;
+        document.getElementById("remember").checked = true;
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
