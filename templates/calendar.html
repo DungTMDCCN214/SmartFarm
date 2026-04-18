@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Lịch canh tác - SmartFarm</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-green: #2e7d32;
+        --secondary-green: #4caf50;
+        --accent-orange: #ffa000;
+      }
+
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        padding-top: 70px;
+        padding-bottom: 70px;
+      }
+
+      .navbar {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-brand {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white !important;
+      }
+
+      /* Calendar Header */
+      .calendar-header {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .month-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .month-nav button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--primary-green);
+        padding: 5px 15px;
+        border-radius: 10px;
+        transition: all 0.3s;
+      }
+
+      .month-nav button:hover {
+        background: #e8f5e9;
+      }
+
+      .month-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary-green);
+        margin: 0;
+      }
+
+      /* Calendar Grid */
+      .calendar-grid {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        background: var(--primary-green);
+        color: white;
+        text-align: center;
+        padding: 12px 0;
+        font-weight: bold;
+      }
+
+      .calendar-days {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .calendar-week {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        border-bottom: 1px solid #eee;
+      }
+
+      .calendar-day {
+        min-height: 100px;
+        padding: 8px;
+        border-right: 1px solid #eee;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .calendar-day:hover {
+        background: #f5f5f5;
+      }
+
+      .calendar-day.empty {
+        background: #fafafa;
+        cursor: default;
+      }
+
+      .day-number {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        line-height: 28px;
+        text-align: center;
+        border-radius: 50%;
+      }
+
+      .calendar-day.today .day-number {
+        background: var(--primary-green);
+        color: white;
+      }
+
+      .task-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-bottom: 3px;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .task-badge:hover {
+        transform: scale(1.05);
+      }
+
+      .task-water {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+      .task-fertilizer {
+        background: #fff3e0;
+        color: #e65100;
+      }
+      .task-spray {
+        background: #ffebee;
+        color: #c62828;
+      }
+      .task-harvest {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .task-other {
+        background: #f3e5f5;
+        color: #6a1b9a;
+      }
+
+      /* Task List */
+      .task-list {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        margin-top: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .task-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-left: 4px solid;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        background: #fafafa;
+        transition: all 0.3s;
+      }
+
+      .task-item:hover {
+        transform: translateX(5px);
+        background: #f5f5f5;
+      }
+
+      .task-check {
+        margin-right: 15px;
+      }
+
+      .task-check input {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+
+      .task-content {
+        flex: 1;
+      }
+
+      .task-title {
+        font-weight: bold;
+        margin-bottom: 3px;
+      }
+
+      .task-date {
+        font-size: 0.75rem;
+        color: #666;
+      }
+
+      .task-notes {
+        font-size: 0.8rem;
+        color: #888;
+        margin-top: 3px;
+      }
+
+      .task-actions {
+        display: flex;
+        gap: 5px;
+      }
+
+      .task-actions button {
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 5px 8px;
+        border-radius: 5px;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+      }
+
+      .task-edit {
+        color: #1976d2;
+      }
+      .task-edit:hover {
+        background: #e3f2fd;
+      }
+
+      .task-delete {
+        color: #f44336;
+      }
+      .task-delete:hover {
+        background: #ffebee;
+      }
+
+      .task-completed {
+        opacity: 0.6;
+      }
+      .task-completed .task-title {
+        text-decoration: line-through;
+      }
+
+      /* Modal */
+      .modal-content {
+        border-radius: 20px;
+      }
+
+      .btn-add {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        font-size: 24px;
+        z-index: 100;
+        transition: all 0.3s;
+      }
+
+      .btn-add:hover {
+        transform: scale(1.1);
+      }
+
+      /* Stats */
+      .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 10px;
+      }
+
+      .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--primary-green);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: #666;
+      }
+
+      /* Toast notification */
+      .toast-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+      }
+
+      .toast-msg {
+        padding: 12px 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+        margin-bottom: 10px;
+      }
+      .toast-success { background: #43a047; }
+      .toast-error { background: #e53935; }
+      .toast-warning { background: #fb8c00; }
+
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes fadeOut {
+        to { opacity: 0; transform: translateY(-10px); }
+      }
+
+      /* Bottom Navigation */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+
+      .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #666;
+        font-size: 0.8rem;
+        transition: color 0.3s;
+      }
+
+      .bottom-nav-item i {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+      }
+
+      .bottom-nav-item.active,
+      .bottom-nav-item:hover {
+        color: var(--primary-green);
+      }
+
+      @media (min-width: 768px) {
+        .btn-add {
+          bottom: 20px;
+        }
+        .bottom-nav {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .calendar-day {
+          min-height: 70px;
+          font-size: 0.7rem;
+        }
+        .task-badge {
+          font-size: 0.6rem;
+          padding: 1px 4px;
+        }
+        .day-number {
+          width: 22px;
+          height: 22px;
+          line-height: 22px;
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-leaf"></i> SmartFarm
+        </a>
+      </div>
+    </nav>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="container">
+      <div
+        id="calendarAlert"
+        class="alert alert-warning d-none"
+        role="alert"
+      ></div>
+      <!-- Stats -->
+      <div class="stats-card">
+        <div class="row">
+          <div class="col-3 stat-item">
+            <div class="stat-number" id="totalTasks">0</div>
+            <div class="stat-label">Tổng công việc</div>
+          </div>
+          <div class="col-3 stat-item">
+            <div class="stat-number" id="completedTasks">0</div>
+            <div class="stat-label">Đã hoàn thành</div>
+          </div>
+          <div class="col-3 stat-item">
+            <div class="stat-number" id="pendingTasks">0</div>
+            <div class="stat-label">Đang chờ</div>
+          </div>
+          <div class="col-3 stat-item">
+            <div class="stat-number" id="overdueTasks">0</div>
+            <div class="stat-label">Quá hạn</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Header -->
+      <div class="calendar-header">
+        <div class="month-nav">
+          <button onclick="changeMonth(-1)">←</button>
+          <h3 class="month-title" id="monthTitle">Tháng 1, 2024</h3>
+          <button onclick="changeMonth(1)">→</button>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="calendar-grid">
+        <div class="calendar-weekdays">
+          <div>CN</div>
+          <div>T2</div>
+          <div>T3</div>
+          <div>T4</div>
+          <div>T5</div>
+          <div>T6</div>
+          <div>T7</div>
+        </div>
+        <div class="calendar-days" id="calendarDays"></div>
+      </div>
+
+      <!-- Task List -->
+      <div class="task-list">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">
+            <i class="fas fa-list"></i> Công việc trong tháng
+          </h5>
+          <button
+            class="btn btn-sm btn-success"
+            onclick="openAddModal()"
+          >
+            <i class="fas fa-plus"></i> Thêm
+          </button>
+        </div>
+        <div id="taskList"></div>
+      </div>
+    </div>
+
+    <!-- Add Task Button (Mobile) -->
+    <button
+      class="btn-add d-md-none"
+      onclick="openAddModal()"
+    >
+      <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Add/Edit Task Modal -->
+    <div class="modal fade" id="taskModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title" id="taskModalTitle">
+              <i class="fas fa-plus"></i> Thêm công việc mới
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editTaskId" value="" />
+
+            <label class="form-label">Loại công việc</label>
+            <select id="taskType" class="form-select mb-3">
+              <option value="water">💧 Tưới nước</option>
+              <option value="fertilizer">🌱 Bón phân</option>
+              <option value="spray">🛡️ Phun thuốc</option>
+              <option value="harvest">🍎 Thu hoạch</option>
+              <option value="other">📋 Công việc khác</option>
+            </select>
+
+            <label class="form-label">Loại cây</label>
+            <select id="plantType" class="form-select mb-3">
+              <option value="Lúa">🌾 Lúa</option>
+              <option value="Ngô">🌽 Ngô</option>
+              <option value="Cam">🍊 Cam</option>
+              <option value="Chanh">🍋 Chanh</option>
+              <option value="Dưa hấu">🍉 Dưa hấu</option>
+              <option value="Ổi">🍏 Ổi</option>
+              <option value="Xoài">🥭 Xoài</option>
+              <option value="Vải">🍒 Vải</option>
+              <option value="Bưởi">🍊 Bưởi</option>
+              <option value="Nhãn">🫘 Nhãn</option>
+            </select>
+
+            <label class="form-label">Ngày thực hiện</label>
+            <input type="date" id="taskDate" class="form-control mb-3" />
+
+            <label class="form-label">Ghi chú</label>
+            <textarea
+              id="taskNote"
+              class="form-control"
+              rows="2"
+              placeholder="Nhập ghi chú..."
+            ></textarea>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Hủy
+            </button>
+            <button class="btn btn-success" id="taskSaveBtn" onclick="saveTask()">
+              Thêm công việc
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <a href="/" class="bottom-nav-item"
+        ><i class="fas fa-home"></i><span>Trang chủ</span></a
+      >
+      <a href="/diagnose" class="bottom-nav-item"
+        ><i class="fas fa-stethoscope"></i><span>Chẩn đoán</span></a
+      >
+      <a href="/calendar" class="bottom-nav-item active"
+        ><i class="fas fa-calendar"></i><span>Lịch</span></a
+      >
+      <a href="/community" class="bottom-nav-item"
+        ><i class="fas fa-users"></i><span>Cộng đồng</span></a
+      >
+      <a href="/chatbot" class="bottom-nav-item"
+        ><i class="fas fa-robot"></i><span>Chat</span></a
+      >
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      let currentYear = 2024;
+      let currentMonth = 0;
+      let currentTasks = [];
+      let hasShownAuthWarning = false;
+      let taskModalInstance = null;
+
+      const today = new Date();
+      currentYear = today.getFullYear();
+      currentMonth = today.getMonth();
+
+      // Toast notification
+      function showToast(message, type = "success") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `toast-msg toast-${type}`;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      function showCalendarAlert(message, type = "warning") {
+        const alertBox = document.getElementById("calendarAlert");
+        alertBox.className = `alert alert-${type}`;
+        alertBox.textContent = message;
+      }
+
+      function hideCalendarAlert() {
+        const alertBox = document.getElementById("calendarAlert");
+        alertBox.className = "alert alert-warning d-none";
+        alertBox.textContent = "";
+      }
+
+      async function parseApiResponse(response) {
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch (error) {
+          payload = null;
+        }
+        if (!response.ok) {
+          const error = new Error(payload?.message || "Có lỗi xảy ra!");
+          error.status = response.status;
+          error.payload = payload;
+          throw error;
+        }
+        return payload;
+      }
+
+      function handleCalendarApiError(error, fallbackMessage) {
+        if (error.status === 401) {
+          currentTasks = [];
+          updateStats();
+          renderCalendar();
+          renderTaskList();
+          showCalendarAlert(
+            "Vui lòng đăng nhập để dùng lịch cá nhân và thêm công việc.",
+            "warning"
+          );
+          if (!hasShownAuthWarning) {
+            showToast("Vui lòng đăng nhập để dùng lịch cá nhân.", "warning");
+            hasShownAuthWarning = true;
+          }
+          return;
+        }
+        console.error("Calendar error:", error);
+        showToast(error.payload?.message || fallbackMessage, "error");
+      }
+
+      // Load tasks
+      async function loadTasks() {
+        try {
+          const response = await fetch("/api/tasks");
+          const tasks = await parseApiResponse(response);
+          currentTasks = tasks;
+          hideCalendarAlert();
+          hasShownAuthWarning = false;
+          updateStats();
+          renderCalendar();
+          renderTaskList();
+        } catch (error) {
+          handleCalendarApiError(
+            error,
+            "Không thể tải lịch lúc này. Vui lòng thử lại sau."
+          );
+        }
+      }
+
+      function updateStats() {
+        const total = currentTasks.length;
+        const completed = currentTasks.filter((t) => t.completed).length;
+        const pending = total - completed;
+        const todayStr = new Date().toISOString().split("T")[0];
+        const overdue = currentTasks.filter(
+          (t) => !t.completed && t.scheduled_date < todayStr
+        ).length;
+
+        document.getElementById("totalTasks").innerText = total;
+        document.getElementById("completedTasks").innerText = completed;
+        document.getElementById("pendingTasks").innerText = pending;
+        document.getElementById("overdueTasks").innerText = overdue;
+      }
+
+      function renderCalendar() {
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const startWeekday = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+
+        const monthNames = [
+          "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
+          "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
+          "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+        ];
+        document.getElementById("monthTitle").innerText =
+          `${monthNames[currentMonth]}, ${currentYear}`;
+
+        let calendarHtml = "";
+        let day = 1;
+
+        for (let i = 0; i < 6; i++) {
+          let weekHtml = '<div class="calendar-week">';
+          for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < startWeekday) {
+              weekHtml += '<div class="calendar-day empty"></div>';
+            } else if (day > daysInMonth) {
+              weekHtml += '<div class="calendar-day empty"></div>';
+            } else {
+              const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+              const dayTasks = currentTasks.filter(
+                (t) => t.scheduled_date === dateStr
+              );
+              const isToday =
+                dateStr === new Date().toISOString().split("T")[0];
+              const todayClass = isToday ? "today" : "";
+
+              weekHtml += `
+                <div class="calendar-day ${todayClass}" onclick="openAddModalForDate('${dateStr}')">
+                    <div class="day-number">${day}</div>
+                    ${dayTasks
+                      .slice(0, 2)
+                      .map(
+                        (task) => `
+                        <div class="task-badge task-${task.task_type}" onclick="event.stopPropagation(); openEditModal(${task.id})" title="${getTaskTypeName(task.task_type)} - ${task.plant_type}">
+                            ${getTaskIcon(task.task_type)} ${getTaskTypeName(task.task_type)}
+                        </div>
+                    `
+                      )
+                      .join("")}
+                    ${dayTasks.length > 2 ? `<div class="task-badge" style="background:#eee;color:#666;">+${dayTasks.length - 2}</div>` : ""}
+                </div>
+              `;
+              day++;
+            }
+          }
+          weekHtml += "</div>";
+          calendarHtml += weekHtml;
+          if (day > daysInMonth) break;
+        }
+
+        document.getElementById("calendarDays").innerHTML = calendarHtml;
+      }
+
+      function renderTaskList() {
+        const monthTasks = currentTasks.filter((task) => {
+          const taskDate = new Date(task.scheduled_date);
+          return (
+            taskDate.getMonth() === currentMonth &&
+            taskDate.getFullYear() === currentYear
+          );
+        });
+
+        if (monthTasks.length === 0) {
+          document.getElementById("taskList").innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-calendar-check fa-3x"></i>
+                <p class="mt-2">Chưa có công việc nào trong tháng này</p>
+                <button class="btn btn-sm btn-success" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i> Thêm công việc đầu tiên
+                </button>
+            </div>
+          `;
+          return;
+        }
+
+        monthTasks.sort((a, b) =>
+          a.scheduled_date.localeCompare(b.scheduled_date)
+        );
+
+        document.getElementById("taskList").innerHTML = monthTasks
+          .map(
+            (task) => `
+            <div class="task-item ${task.completed ? "task-completed" : ""}" style="border-left-color: ${getTaskColor(task.task_type)}">
+                <div class="task-check">
+                    <input type="checkbox" ${task.completed ? "checked" : ""} onchange="toggleTaskComplete(${task.id})">
+                </div>
+                <div class="task-content">
+                    <div class="task-title">
+                        ${getTaskIcon(task.task_type)} ${getTaskTypeName(task.task_type)} - ${task.plant_type}
+                    </div>
+                    <div class="task-date">
+                        <i class="far fa-calendar-alt"></i> ${formatDate(task.scheduled_date)}
+                    </div>
+                    ${task.notes ? `<div class="task-notes"><i class="fas fa-pen"></i> ${task.notes}</div>` : ""}
+                </div>
+                <div class="task-actions">
+                    <button class="task-edit" onclick="openEditModal(${task.id})" title="Sửa">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="task-delete" onclick="deleteTask(${task.id})" title="Xóa">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+          `
+          )
+          .join("");
+      }
+
+      // Helper functions
+      function getTaskIcon(type) {
+        const icons = { water: "💧", fertilizer: "🌱", spray: "🛡️", harvest: "🍎", other: "📋" };
+        return icons[type] || "📋";
+      }
+
+      function getTaskTypeName(type) {
+        const names = { water: "Tưới nước", fertilizer: "Bón phân", spray: "Phun thuốc", harvest: "Thu hoạch", other: "Khác" };
+        return names[type] || "Khác";
+      }
+
+      function getTaskColor(type) {
+        const colors = { water: "#2196F3", fertilizer: "#FF9800", spray: "#F44336", harvest: "#4CAF50", other: "#9C27B0" };
+        return colors[type] || "#9C27B0";
+      }
+
+      function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+      }
+
+      function changeMonth(delta) {
+        currentMonth += delta;
+        if (currentMonth < 0) {
+          currentMonth = 11;
+          currentYear--;
+        } else if (currentMonth > 11) {
+          currentMonth = 0;
+          currentYear++;
+        }
+        renderCalendar();
+        renderTaskList();
+      }
+
+      // ============ MODAL FUNCTIONS ============
+
+      function getTaskModal() {
+        if (!taskModalInstance) {
+          taskModalInstance = new bootstrap.Modal(document.getElementById("taskModal"));
+        }
+        return taskModalInstance;
+      }
+
+      function resetTaskForm() {
+        document.getElementById("editTaskId").value = "";
+        document.getElementById("taskType").value = "water";
+        document.getElementById("plantType").value = "Lúa";
+        document.getElementById("taskDate").value = "";
+        document.getElementById("taskNote").value = "";
+      }
+
+      function openAddModal() {
+        resetTaskForm();
+        document.getElementById("taskModalTitle").innerHTML = '<i class="fas fa-plus"></i> Thêm công việc mới';
+        document.getElementById("taskSaveBtn").innerText = "Thêm công việc";
+        document.getElementById("taskDate").value = new Date().toISOString().split("T")[0];
+        getTaskModal().show();
+      }
+
+      function openAddModalForDate(dateStr) {
+        resetTaskForm();
+        document.getElementById("taskModalTitle").innerHTML = '<i class="fas fa-plus"></i> Thêm công việc mới';
+        document.getElementById("taskSaveBtn").innerText = "Thêm công việc";
+        document.getElementById("taskDate").value = dateStr;
+        getTaskModal().show();
+      }
+
+      function openEditModal(taskId) {
+        const task = currentTasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        document.getElementById("editTaskId").value = task.id;
+        document.getElementById("taskType").value = task.task_type;
+        document.getElementById("plantType").value = task.plant_type;
+        document.getElementById("taskDate").value = task.scheduled_date;
+        document.getElementById("taskNote").value = task.notes || "";
+        document.getElementById("taskModalTitle").innerHTML = '<i class="fas fa-edit"></i> Sửa công việc';
+        document.getElementById("taskSaveBtn").innerText = "Lưu thay đổi";
+        getTaskModal().show();
+      }
+
+      // ============ CRUD OPERATIONS ============
+
+      async function saveTask() {
+        const editId = document.getElementById("editTaskId").value;
+        const taskData = {
+          task_type: document.getElementById("taskType").value,
+          plant_type: document.getElementById("plantType").value,
+          scheduled_date: document.getElementById("taskDate").value,
+          notes: document.getElementById("taskNote").value,
+        };
+
+        if (!taskData.scheduled_date) {
+          showToast("Vui lòng chọn ngày thực hiện!", "error");
+          return;
+        }
+
+        try {
+          let response;
+          if (editId) {
+            // Update existing task
+            response = await fetch(`/api/tasks/${editId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(taskData),
+            });
+          } else {
+            // Add new task
+            response = await fetch("/api/tasks", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(taskData),
+            });
+          }
+
+          await parseApiResponse(response);
+          hideCalendarAlert();
+          getTaskModal().hide();
+          resetTaskForm();
+          await loadTasks();
+          showToast(editId ? "Đã cập nhật công việc!" : "Đã thêm công việc mới!");
+        } catch (error) {
+          handleCalendarApiError(
+            error,
+            editId ? "Không thể cập nhật công việc." : "Không thể thêm công việc."
+          );
+        }
+      }
+
+      async function toggleTaskComplete(taskId) {
+        const task = currentTasks.find((t) => t.id === taskId);
+        if (task) {
+          try {
+            const response = await fetch(`/api/tasks/${taskId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ completed: !task.completed }),
+            });
+            await parseApiResponse(response);
+            hideCalendarAlert();
+            await loadTasks();
+            showToast(task.completed ? "Đã đánh dấu chưa hoàn thành" : "Đã hoàn thành công việc!", "success");
+          } catch (error) {
+            handleCalendarApiError(
+              error,
+              "Không thể cập nhật công việc."
+            );
+          }
+        }
+      }
+
+      async function deleteTask(taskId) {
+        if (confirm("Bạn có chắc muốn xóa công việc này?")) {
+          try {
+            const response = await fetch(`/api/tasks/${taskId}`, {
+              method: "DELETE",
+            });
+            await parseApiResponse(response);
+            hideCalendarAlert();
+            await loadTasks();
+            showToast("Đã xóa công việc!");
+          } catch (error) {
+            handleCalendarApiError(
+              error,
+              "Không thể xóa công việc."
+            );
+          }
+        }
+      }
+
+      // Initialize
+      loadTasks();
+    </script>
+  </body>
+</html>

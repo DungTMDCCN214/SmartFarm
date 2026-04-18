@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>SmartFarm - Nông nghiệp thông minh với AI</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-green: #2e7d32;
+        --secondary-green: #4caf50;
+        --accent-orange: #ffa000;
+        --dark-green: #1b5e20;
+        --light-green: #81c784;
+        --bg-light: #f1f8e9;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg-light);
+        padding-top: 70px;
+        padding-bottom: 70px;
+        overflow-x: hidden;
+      }
+
+      /* Navigation */
+      .navbar {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+      }
+
+      .navbar-brand {
+        font-size: 1.6rem;
+        font-weight: bold;
+        animation: fadeInLeft 0.8s;
+      }
+
+      .navbar-brand i {
+        margin-right: 8px;
+      }
+
+      .nav-link {
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+
+      .nav-link:hover {
+        transform: translateY(-2px);
+      }
+
+      /* Hero Section */
+      .hero-section {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>')
+          no-repeat bottom;
+        background-size: cover;
+        opacity: 0.3;
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        animation: fadeInUp 1s;
+      }
+
+      .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .hero-subtitle {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+      }
+
+      .btn-hero {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s;
+        margin: 0 10px;
+      }
+
+      .btn-hero:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Services Section */
+      .services-section {
+        padding: 80px 0;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-green);
+        margin-bottom: 1rem;
+        position: relative;
+        display: inline-block;
+      }
+
+      .section-title::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--primary-green),
+          var(--accent-orange)
+        );
+        border-radius: 2px;
+      }
+
+      .service-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .service-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(76, 175, 80, 0.1),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .service-card:hover::before {
+        left: 100%;
+      }
+
+      .service-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        transition: all 0.3s;
+      }
+
+      .service-card:hover .icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+      }
+
+      .icon-wrapper i {
+        font-size: 2.5rem;
+        color: white;
+      }
+
+      .service-card h4 {
+        color: var(--primary-green);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+      }
+
+      .service-card p {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 0;
+      }
+
+      /* Stats Section */
+      .stats-section {
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        padding: 60px 0;
+        color: white;
+      }
+
+      .stat-item {
+        text-align: center;
+        animation: fadeInUp 0.8s;
+      }
+
+      .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: 1rem;
+        opacity: 0.95;
+      }
+
+      /* Features Section */
+      .features-section {
+        padding: 80px 0;
+        background: white;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        border-radius: 15px;
+        transition: all 0.3s;
+      }
+
+      .feature-item:hover {
+        background: var(--bg-light);
+        transform: translateX(10px);
+      }
+
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-green),
+          var(--secondary-green)
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+        flex-shrink: 0;
+      }
+
+      .feature-icon i {
+        font-size: 1.8rem;
+        color: white;
+      }
+
+      .feature-content h4 {
+        color: var(--primary-green);
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .feature-content p {
+        color: #666;
+        margin-bottom: 0;
+      }
+
+      /* CTA Section */
+      .cta-section {
+        background: linear-gradient(135deg, var(--accent-orange), #ff6f00);
+        padding: 60px 0;
+        color: white;
+        text-align: center;
+      }
+
+      .cta-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+
+      .btn-cta {
+        background: white;
+        color: var(--accent-orange);
+        padding: 12px 35px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s;
+        margin-top: 20px;
+      }
+
+      .btn-cta:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        color: var(--primary-green);
+      }
+
+      /* Bottom Navigation (Mobile) */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 0;
+        box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: none;
+      }
+
+      .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: #666;
+        font-size: 0.75rem;
+        transition: all 0.3s;
+        padding: 5px 10px;
+        border-radius: 10px;
+      }
+
+      .bottom-nav-item i {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+      }
+
+      .bottom-nav-item.active,
+      .bottom-nav-item:hover {
+        color: var(--primary-green);
+        background: rgba(46, 125, 50, 0.1);
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Responsive */
+      @media (min-width: 768px) {
+        body {
+          padding-bottom: 0;
+        }
+
+        .bottom-nav {
+          display: none;
+        }
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding-bottom: 70px;
+        }
+
+        .bottom-nav {
+          display: flex;
+        }
+
+        .hero-title {
+          font-size: 2rem;
+        }
+
+        .hero-subtitle {
+          font-size: 1rem;
+        }
+
+        .btn-hero {
+          padding: 10px 20px;
+          font-size: 0.9rem;
+          margin: 5px;
+        }
+
+        .section-title {
+          font-size: 1.8rem;
+        }
+
+        .service-card {
+          padding: 1.5rem;
+        }
+
+        .stat-number {
+          font-size: 2rem;
+        }
+
+        .feature-item {
+          padding: 15px;
+        }
+      }
+
+      /* Scroll to top button */
+      .scroll-top {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+        background: var(--primary-green);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+        z-index: 999;
+        border: none;
+      }
+
+      .scroll-top.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .scroll-top:hover {
+        background: var(--dark-green);
+        transform: translateY(-3px);
+      }
+
+      @media (min-width: 768px) {
+        .scroll-top {
+          bottom: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-leaf"></i> SmartFarm
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="fas fa-home"></i> Trang chủ
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/diagnose">
+                <i class="fas fa-stethoscope"></i> Chẩn đoán
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/tracking">
+                <i class="fas fa-chart-line"></i> Theo dõi
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/community">
+                <i class="fas fa-users"></i> Cộng đồng
+              </a>
+            </li>
+
+            <!-- Nút này sẽ thay đổi giữa Đăng nhập và Đăng xuất -->
+            <li class="nav-item" id="authNav">
+              <a class="nav-link" id="authLink" href="/login">
+                <i class="fas fa-sign-in-alt"></i>
+                <span id="authText">Đăng nhập</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <script>
+      // Kiểm tra trạng thái đăng nhập và cập nhật nút
+      async function updateAuthButton() {
+        const authLink = document.getElementById("authLink");
+        const authText = document.getElementById("authText");
+
+        try {
+          const response = await fetch("/api/check_auth");
+          const data = await response.json();
+          const isLoggedIn = data.authenticated;
+
+          if (isLoggedIn) {
+            localStorage.setItem("isLoggedIn", "true");
+            if (data.user) {
+              localStorage.setItem("user_id", data.user.id);
+              localStorage.setItem("username", data.user.username);
+              localStorage.setItem("fullname", data.user.fullname || "");
+            }
+            // Đã đăng nhập -> hiển thị Đăng xuất
+            authLink.href = "#";
+            authLink.onclick = function (e) {
+              e.preventDefault();
+              logout();
+            };
+            authText.innerHTML = "Đăng xuất";
+            authLink.querySelector("i").className = "fas fa-sign-out-alt";
+          } else {
+            localStorage.removeItem("isLoggedIn");
+            // Chưa đăng nhập -> hiển thị Đăng nhập
+            authLink.href = "/login";
+            authLink.onclick = null;
+            authText.innerHTML = "Đăng nhập";
+            authLink.querySelector("i").className = "fas fa-sign-in-alt";
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      async function logout() {
+        if (confirm("Bạn có chắc muốn đăng xuất?")) {
+          try {
+            await fetch("/api/logout", { method: "POST" });
+          } catch(e) {
+            console.error(e);
+          }
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("username");
+          localStorage.removeItem("fullname");
+          window.location.href = "/";
+        }
+      }
+
+      // Gọi khi trang load
+      updateAuthButton();
+    </script>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="row align-items-center min-vh-100">
+          <div class="col-lg-7 text-white hero-content">
+            <h1 class="hero-title">
+              <i class="fas fa-robot"></i> AI Plant Doctor
+            </h1>
+            <p class="hero-subtitle">
+              Chẩn đoán bệnh cây trồng bằng trí tuệ nhân tạo - Giải pháp nông
+              nghiệp thông minh cho nhà nông hiện đại
+            </p>
+            <div>
+              <a href="/diagnose" class="btn btn-light btn-hero">
+                <i class="fas fa-stethoscope"></i> Chẩn đoán ngay
+              </a>
+              <a href="#services" class="btn btn-outline-light btn-hero">
+                <i class="fas fa-chevron-down"></i> Khám phá
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-5 d-none d-lg-block">
+            <div class="text-center">
+              <i
+                class="fas fa-leaf"
+                style="font-size: 250px; color: rgba(255, 255, 255, 0.2)"
+              ></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="section-title">Dịch vụ thông minh</h2>
+          <p class="text-muted mt-3">
+            8 giải pháp toàn diện cho nhà nông hiện đại
+          </p>
+        </div>
+        <div class="row g-4">
+          <!-- A. Weather -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/weather'">
+              <div class="icon-wrapper">
+                <i class="fas fa-cloud-sun-rain"></i>
+              </div>
+              <h4>🌦️ Thời tiết & Cảnh báo</h4>
+              <p>
+                Cảnh báo sớm mưa lớn, sương muối, nhiệt độ bất thường và gợi ý
+                chăm sóc theo thời tiết
+              </p>
+            </div>
+          </div>
+
+          <!-- B. Care Guide -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/guide'">
+              <div class="icon-wrapper">
+                <i class="fas fa-seedling"></i>
+              </div>
+              <h4>🌱 Hướng dẫn chăm sóc</h4>
+              <p>
+                Thư viện kiến thức về tưới nước, bón phân, phòng bệnh cho từng
+                loại cây trồng
+              </p>
+            </div>
+          </div>
+
+          <!-- C. Calendar -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/calendar'">
+              <div class="icon-wrapper">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <h4>📅 Lịch canh tác</h4>
+              <p>
+                Nhắc lịch tưới cây, bón phân, phun thuốc thông minh - Tùy chỉnh
+                theo nhu cầu
+              </p>
+            </div>
+          </div>
+
+          <!-- D. Store -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/store'">
+              <div class="icon-wrapper">
+                <i class="fas fa-store"></i>
+              </div>
+              <h4>🛒 Cửa hàng nông nghiệp</h4>
+              <p>
+                Phân bón, thuốc trừ sâu, dụng cụ chất lượng cao - Liên kết mua
+                hàng uy tín
+              </p>
+            </div>
+          </div>
+
+          <!-- E. Community -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/community'">
+              <div class="icon-wrapper">
+                <i class="fas fa-users"></i>
+              </div>
+              <h4>💬 Cộng đồng nông dân</h4>
+              <p>
+                Đăng bài hỏi đáp, chia sẻ kinh nghiệm, bình luận và tương tác
+              </p>
+            </div>
+          </div>
+
+          <!-- F. Tracking -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/tracking'">
+              <div class="icon-wrapper">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h4>📊 Theo dõi cây trồng</h4>
+              <p>
+                Lưu lịch sử chẩn đoán, theo dõi tình trạng cây theo thời gian
+              </p>
+            </div>
+          </div>
+
+          <!-- G. Diary -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/diary'">
+              <div class="icon-wrapper">
+                <i class="fas fa-book-open"></i>
+              </div>
+              <h4>📷 Nhật ký vườn</h4>
+              <p>Lưu ảnh cây theo ngày, so sánh sự phát triển và ghi chú</p>
+            </div>
+          </div>
+
+          <!-- H. Chatbot -->
+          <div class="col-md-6 col-lg-3">
+            <div class="service-card" onclick="location.href = '/chatbot'">
+              <div class="icon-wrapper">
+                <i class="fas fa-robot"></i>
+              </div>
+              <h4>🤖 Chatbot tư vấn</h4>
+              <p>Trả lời câu hỏi về chăm sóc cây, giải đáp bệnh 24/7</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3 col-6 mb-4 mb-md-0">
+            <div class="stat-item">
+              <div class="stat-number">95%</div>
+              <div class="stat-label">Độ chính xác</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6 mb-4 mb-md-0">
+            <div class="stat-item">
+              <div class="stat-number">50+</div>
+              <div class="stat-label">Loại bệnh</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6 mb-4 mb-md-0">
+            <div class="stat-item">
+              <div class="stat-number">10K+</div>
+              <div class="stat-label">Người dùng</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6 mb-4 mb-md-0">
+            <div class="stat-item">
+              <div class="stat-number">24/7</div>
+              <div class="stat-label">Hỗ trợ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="section-title">Tại sao chọn SmartFarm?</h2>
+          <p class="text-muted mt-3">
+            Công nghệ AI tiên tiến cho nền nông nghiệp bền vững
+          </p>
+        </div>
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-brain"></i>
+              </div>
+              <div class="feature-content">
+                <h4>Trí tuệ nhân tạo tiên tiến</h4>
+                <p>
+                  Mô hình AI được huấn luyện trên hàng ngàn ảnh bệnh cây, độ
+                  chính xác lên đến 95%
+                </p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <div class="feature-content">
+                <h4>Dễ dàng sử dụng</h4>
+                <p>
+                  Giao diện thân thiện, responsive trên mọi thiết bị từ điện
+                  thoại đến máy tính
+                </p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="feature-content">
+                <h4>Kết quả nhanh chóng</h4>
+                <p>
+                  Chỉ cần chụp ảnh lá cây, AI sẽ phân tích và đưa ra kết quả
+                  trong vài giây
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
+              <div class="feature-content">
+                <h4>Kiến thức chuyên sâu</h4>
+                <p>
+                  Cung cấp thông tin chi tiết về bệnh và cách xử lý từ chuyên
+                  gia nông nghiệp
+                </p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="feature-content">
+                <h4>Theo dõi lịch sử</h4>
+                <p>
+                  Lưu trữ và theo dõi tình trạng cây trồng theo thời gian, dễ
+                  dàng quản lý
+                </p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-headset"></i>
+              </div>
+              <div class="feature-content">
+                <h4>Hỗ trợ 24/7</h4>
+                <p>
+                  Chatbot tư vấn và đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi
+                  thắc mắc
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+      <div class="container">
+        <h2 class="cta-title">Sẵn sàng bảo vệ mùa màng?</h2>
+        <p class="mb-0">
+          Bắt đầu sử dụng SmartFarm ngay hôm nay - Hoàn toàn miễn phí!
+        </p>
+        <a href="/diagnose" class="btn btn-cta">
+          <i class="fas fa-stethoscope"></i> Chẩn đoán ngay
+        </a>
+      </div>
+    </section>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="bottom-nav">
+      <a href="/" class="bottom-nav-item active">
+        <i class="fas fa-home"></i>
+        <span>Trang chủ</span>
+      </a>
+      <a href="/diagnose" class="bottom-nav-item">
+        <i class="fas fa-camera"></i>
+        <span>Chẩn đoán</span>
+      </a>
+      <a href="/calendar" class="bottom-nav-item">
+        <i class="fas fa-calendar"></i>
+        <span>Lịch</span>
+      </a>
+      <a href="/community" class="bottom-nav-item">
+        <i class="fas fa-users"></i>
+        <span>Cộng đồng</span>
+      </a>
+      <a href="/chatbot" class="bottom-nav-item">
+        <i class="fas fa-robot"></i>
+        <span>Chat</span>
+      </a>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top" onclick="scrollToTop()">
+      <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Scroll to top functionality
+      window.addEventListener("scroll", function () {
+        const scrollBtn = document.querySelector(".scroll-top");
+        if (window.scrollY > 300) {
+          scrollBtn.classList.add("show");
+        } else {
+          scrollBtn.classList.remove("show");
+        }
+      });
+
+      function scrollToTop() {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }
+        });
+      });
+
+      // Add animation on scroll
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px",
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+          }
+        });
+      }, observerOptions);
+
+      // Observe service cards
+      document
+        .querySelectorAll(".service-card, .feature-item, .stat-item")
+        .forEach((el) => {
+          el.style.opacity = "0";
+          el.style.transform = "translateY(30px)";
+          el.style.transition = "all 0.6s ease-out";
+          observer.observe(el);
+        });
+
+      // Auto-hide alerts (if any)
+      setTimeout(() => {
+        const alerts = document.querySelectorAll(".alert");
+        alerts.forEach((alert) => {
+          alert.style.transition = "opacity 0.5s";
+          setTimeout(() => {
+            alert.style.opacity = "0";
+            setTimeout(() => alert.remove(), 500);
+          }, 3000);
+        });
+      }, 1000);
+    </script>
+  </body>
+</html>
