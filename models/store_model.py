@@ -23,7 +23,7 @@ class StoreModel:
                 "Dễ hòa tan, cây hấp thu nhanh"
             ],
             "usage": "Bón lót hoặc bón thúc, 200-300kg/ha tùy loại cây",
-            "image": "https://cdn.pixabay.com/photo/2016/06/02/02/33/granules-1430269_640.jpg"
+            "image": "static/uploads/phan_npk.jpg"
         },
         {
             "id": "phc_vi_sinh",
@@ -44,7 +44,7 @@ class StoreModel:
                 "Giảm bệnh hại từ đất"
             ],
             "usage": "Bón lót 1-2 tấn/ha, kết hợp với phân vô cơ",
-            "image": "https://cdn.pixabay.com/photo/2018/05/16/21/12/compost-3407351_640.jpg"
+            "image": "static/uploads/phan_huu_co_vi_sinh.jpg"
         },
         {
             "id": "kali_mk",
@@ -65,7 +65,7 @@ class StoreModel:
                 "Giảm đổ ngã cho cây"
             ],
             "usage": "Bón thúc 100-150kg/ha, bón khi cây chuẩn bị ra hoa",
-            "image": "https://cdn.pixabay.com/photo/2016/06/02/02/33/granules-1430268_640.jpg"
+            "image": "static/uploads/kali_mk.jpg"
         },
         
         # Thuốc bảo vệ thực vật
@@ -88,7 +88,7 @@ class StoreModel:
                 "An toàn cho cây trồng"
             ],
             "usage": "Pha 30-40g/bình 16 lít, phun khi bệnh chớm xuất hiện",
-            "image": "https://cdn.pixabay.com/photo/2015/12/04/11/33/pesticides-1076686_640.jpg"
+            "image": "static/uploads/trizole.jpg"
         },
         {
             "id": "mancozeb",
@@ -109,7 +109,7 @@ class StoreModel:
                 "Giá thành hợp lý"
             ],
             "usage": "Pha 200-250g/bình 16 lít, phun 7-10 ngày/lần",
-            "image": "https://cdn.pixabay.com/photo/2018/07/10/11/57/pesticide-3529693_640.jpg"
+            "image": "static/uploads/manozeb.jpg"
         },
         
         # Dụng cụ
@@ -132,7 +132,7 @@ class StoreModel:
                 "Bền bỉ, lâu hỏng"
             ],
             "usage": "Dùng để phun thuốc BVTV, tưới phân bón lá",
-            "image": "https://cdn.pixabay.com/photo/2017/01/08/13/00/knapsack-1963014_640.jpg"
+            "image": "static/uploads/binh_bom_tay.jpg"
         },
         {
             "id": "keo_cat_canh",
@@ -153,7 +153,7 @@ class StoreModel:
                 "Nhẹ, dễ sử dụng"
             ],
             "usage": "Cắt tỉa cành, tạo tán cho cây ăn quả",
-            "image": "https://cdn.pixabay.com/photo/2017/02/15/11/49/pruning-2068214_640.jpg"
+            "image": "static/uploads/keo_cat_canh.jpg"
         },
         
         # Hạt giống
@@ -176,7 +176,7 @@ class StoreModel:
                 "Phù hợp trồng quanh năm"
             ],
             "usage": "Gieo hạt, phủ đất mỏng, tưới ẩm hàng ngày",
-            "image": "https://cdn.pixabay.com/photo/2018/05/27/20/28/seeds-3434261_640.jpg"
+            "image": "static/uploads/hat_giong_rau_sach.jpg"
         },
         {
             "id": "hat_ot",
@@ -197,7 +197,7 @@ class StoreModel:
                 "Kháng bệnh tốt"
             ],
             "usage": "Ngâm ủ trước khi gieo 4-6 giờ, gieo trong bầu ươm",
-            "image": "https://cdn.pixabay.com/photo/2020/05/22/08/58/chilli-5204959_640.jpg"
+            "image": "static/uploads/hat_giong_ot_chi_thien.jpg"
         }
     ]
     
