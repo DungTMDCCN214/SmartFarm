@@ -790,7 +790,7 @@ def api_predict():
         if result["status"] == "error":
             return jsonify({"success": False, "message": result["message"]})
         
-        # Lấy thông tin điều trị từ DISEASE_ADVICE (vẫn giữ phần advice cũ)
+        # Lấy thông tin điều trị từ DISEASE_ADVICE 
         disease_info = get_disease_advice(result["disease"])        
         # Lưu lịch sử nếu đã đăng nhập
         if 'user_id' in session:
