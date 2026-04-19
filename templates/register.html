@@ -20,7 +20,9 @@
       }
 
       body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: url("/static/uploads/anh_nen.jpg") no-repeat center center
+          fixed;
+        background-size: cover;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         min-height: 100vh;
       }
@@ -323,7 +325,7 @@
         <div class="text-center mt-4">
           <p class="mb-0">
             Đã có tài khoản?
-            <a href="login.html" class="text-success fw-bold">Đăng nhập ngay</a>
+            <a href="/login" class="text-success fw-bold">Đăng nhập ngay</a>
           </p>
         </div>
       </div>
@@ -478,7 +480,7 @@
           if (data.success) {
             showAlert("Đăng ký thành công! Đang chuyển hướng...", "success");
             setTimeout(() => {
-              window.location.href = "login.html";
+              window.location.href = "/login";
             }, 1500);
           } else {
             showAlert(data.message || "Đăng ký thất bại!", "danger");
@@ -500,9 +502,6 @@
         checkPasswordMatch();
       });
 
-      if (localStorage.getItem("isLoggedIn") === "true") {
-        window.location.href = "index.html";
-      }
     </script>
   </body>
 </html>

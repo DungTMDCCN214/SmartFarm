@@ -142,6 +142,21 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def login_required_page(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Bỏ qua kiểm tra nếu là API
+        if request.path.startswith('/api/'):
+            return f(*args, **kwargs)
+        
+        # Kiểm tra session
+        if 'user_id' not in session:
+            # Lưu lại URL muốn đến để sau khi login quay lại
+            session['next_url'] = request.url
+            return redirect(url_for('login_page'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 def allowed_file(filename):
     """Kiểm tra file có hợp lệ không"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in config.ALLOWED_EXTENSIONS
@@ -149,35 +164,81 @@ def allowed_file(filename):
 # ==================== TRANG TĨNH (ROUTES) ====================
 
 @app.route('/')
+@login_required_page  
 def index():
     """Trang chủ"""
     return render_template('index.html')
 
 @app.route('/diagnose')
+@login_required_page  
 def diagnose():
     """Trang chẩn đoán bệnh"""
     return render_template('diagnose.html')
 
 @app.route('/weather')
+@login_required_page  
 def weather():
     """Trang thời tiết"""
     return render_template('weather.html')
 
 @app.route('/guide')
+@login_required_page 
 def guide():
     """Trang hướng dẫn chăm sóc"""
     return render_template('guide.html')
 
 @app.route('/calendar')
+@login_required_page  
 def calendar():
     """Trang lịch canh tác"""
     return render_template('calendar.html')
 
 @app.route('/store')
+@login_required_page 
 def store():
     """Trang cửa hàng"""
     return render_template('store.html')
-# Thêm import vào đầu file
+
+@app.route('/community')
+@login_required_page  
+def community():
+    """Trang cộng đồng"""
+    return render_template('community.html')
+
+@app.route('/tracking')
+@login_required_page  
+def tracking():
+    """Trang theo dõi cây trồng"""
+    return render_template('tracking.html')
+
+@app.route('/diary')
+@login_required_page  
+def diary():
+    """Trang nhật ký vườn"""
+    return render_template('diary.html')
+
+@app.route('/chatbot')
+@login_required_page  
+def chatbot():
+    """Trang chatbot"""
+    return render_template('chatbot.html')
+
+@app.route('/qr')
+def qr_page():
+    """Trang QR code"""
+    return render_template('qr.html')
+
+@app.route('/login')
+def login_page():
+    """Trang đăng nhập"""
+    return render_template('login.html')
+
+@app.route('/register')
+def register_page():
+    """Trang đăng ký"""
+    return render_template('register.html')
+
+
 from models.store_model import StoreModel
 from services.store_service import StoreService
 
@@ -224,35 +285,7 @@ def api_get_categories():
         "categories": StoreModel.get_categories()
     })
 
-@app.route('/community')
-def community():
-    """Trang cộng đồng"""
-    return render_template('community.html')
 
-@app.route('/tracking')
-def tracking():
-    """Trang theo dõi cây trồng"""
-    return render_template('tracking.html')
-
-@app.route('/diary')
-def diary():
-    """Trang nhật ký vườn"""
-    return render_template('diary.html')
-
-@app.route('/chatbot')
-def chatbot():
-    """Trang chatbot"""
-    return render_template('chatbot.html')
-
-@app.route('/login')
-def login_page():
-    """Trang đăng nhập"""
-    return render_template('login.html')
-
-@app.route('/register')
-def register_page():
-    """Trang đăng ký"""
-    return render_template('register.html')
 
 # ==================== API THỜI TIẾT ====================
 
@@ -1211,10 +1244,7 @@ def api_chatbot_quick():
     return jsonify({
         "quick_questions": ChatbotService.get_quick_questions()
     })
-@app.route('/qr')
-def qr_page():
-    """Trang QR code"""
-    return render_template('qr.html')
+
 @app.route('/api/ip', methods=['GET'])
 def get_ip():
     """Lấy IP của máy chủ"""

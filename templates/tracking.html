@@ -22,14 +22,12 @@
         --secondary-green: #4caf50;
         --accent-orange: #ffa000;
       }
-
       body {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         padding-top: 70px;
         padding-bottom: 70px;
       }
-
       .navbar {
         background: linear-gradient(
           135deg,
@@ -38,17 +36,14 @@
         );
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
-
       .navbar-brand {
         font-size: 1.5rem;
         font-weight: bold;
         color: white !important;
       }
-
       .nav-link {
         color: white !important;
       }
-
       .stat-card {
         background: white;
         border-radius: 15px;
@@ -58,7 +53,6 @@
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s;
       }
-
       .stat-card:hover {
         transform: translateY(-5px);
       }
@@ -71,7 +65,6 @@
         font-size: 0.85rem;
         color: #666;
       }
-
       .chart-container {
         background: white;
         border-radius: 15px;
@@ -79,7 +72,6 @@
         margin-bottom: 20px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       }
-
       .history-item {
         background: white;
         border-radius: 12px;
@@ -89,12 +81,10 @@
         transition: all 0.3s;
         cursor: pointer;
       }
-
       .history-item:hover {
         transform: translateX(5px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
-
       .disease-badge {
         display: inline-block;
         padding: 4px 12px;
@@ -102,7 +92,6 @@
         font-size: 0.8rem;
         font-weight: 500;
       }
-
       .disease-badge.healthy {
         background: #e8f5e9;
         color: #2e7d32;
@@ -111,7 +100,6 @@
         background: #ffebee;
         color: #c62828;
       }
-
       .confidence-bar {
         background: #e0e0e0;
         border-radius: 10px;
@@ -119,7 +107,6 @@
         overflow: hidden;
         margin: 8px 0;
       }
-
       .confidence-fill {
         background: linear-gradient(
           90deg,
@@ -130,7 +117,6 @@
         border-radius: 10px;
         transition: width 0.5s;
       }
-
       .bottom-nav {
         position: fixed;
         bottom: 0;
@@ -143,7 +129,6 @@
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
         z-index: 1000;
       }
-
       .bottom-nav-item {
         display: flex;
         flex-direction: column;
@@ -153,7 +138,6 @@
         font-size: 0.8rem;
         transition: color 0.3s;
       }
-
       .bottom-nav-item i {
         font-size: 1.5rem;
         margin-bottom: 4px;
@@ -162,13 +146,11 @@
       .bottom-nav-item:hover {
         color: var(--primary-green);
       }
-
       @media (min-width: 768px) {
         .bottom-nav {
           display: none;
         }
       }
-
       .loading {
         text-align: center;
         padding: 50px;
@@ -180,6 +162,9 @@
       }
       .modal-content {
         border-radius: 20px;
+      }
+      .display-name {
+        font-weight: 600;
       }
     </style>
   </head>
@@ -279,12 +264,135 @@
     </div>
 
     <script>
+      const API_BASE = window.location.origin;
       let plantChart, diseaseChart, monthlyChart;
 
-      function getHistory() {
-        return JSON.parse(localStorage.getItem("diagnosis_history") || "[]");
+      // Hàm chuyển đổi tên bệnh hiển thị đẹp
+      function getDisplayName(diseaseName) {
+        if (!diseaseName) return "Không xác định";
+
+        const nameMap = {
+          la_khoe: "🌱 Cây khỏe mạnh",
+          La_khoe: "🌱 Cây khỏe mạnh",
+          la_khoe_manh: "🌱 Cây khỏe mạnh",
+          benh_loet: "🦠 Bệnh loét",
+          benh_loet_do_vi_khuan: "🦠 Bệnh loét do vi khuẩn",
+          benh_da_dang: "🍂 Bệnh đốm đa dạng",
+          thieu_dinh_duong: "🥀 Thiếu dinh dưỡng",
+          La_vang_thoi_re: "🍂 Lá vàng thối rễ",
+          Lo_loet: "🦠 Bệnh loét",
+          dom_den: "⚫ Đốm đen",
+          Benh_suong_mai: "🌧️ Bệnh sương mai",
+          Benh_than_thu: "🕷️ Bệnh thán thư",
+          virus_kham: "🦠 Virus khảm",
+          Chay_la: "🔥 Cháy lá",
+          Dom_la: "🍂 Đốm lá",
+          Sen_tran: "⚠️ Sẹn trắng",
+          Loet: "🦠 Bệnh loét",
+          Than_thu: "🕷️ Bệnh thán thư",
+          ri_sat: "🔴 Rỉ sắt",
+          Benh_phan_trang: "⚪ Bệnh phấn trắng",
+          Bo_canh_cung_cat: "🐛 Bọ cánh cứng cát",
+          Chet_dan: "💀 Chết dần",
+          Nam_bo_hong: "🍄 Nấm bồ hồng",
+          Ruoi_gay_u: "🪰 Ruồi gây ú",
+        };
+
+        return (
+          nameMap[diseaseName] ||
+          diseaseName
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase())
+        );
       }
 
+      // Kiểm tra có phải cây khỏe mạnh không
+      function isHealthyPlant(diseaseName) {
+        if (!diseaseName) return false;
+        const healthyKeywords = [
+          "la_khoe",
+          "La_khoe",
+          "khoe",
+          "khỏe",
+          "healthy",
+        ];
+        return healthyKeywords.some((keyword) =>
+          diseaseName.toLowerCase().includes(keyword.toLowerCase()),
+        );
+      }
+
+      // Lấy lịch sử từ API server
+      async function getHistoryFromServer() {
+        try {
+          const response = await fetch(`${API_BASE}/api/history`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            return data;
+          } else if (response.status === 401) {
+            // Chưa đăng nhập, chuyển về trang login
+            window.location.href = "/login";
+            return [];
+          }
+          return [];
+        } catch (error) {
+          console.error("Lỗi khi lấy lịch sử:", error);
+          return [];
+        }
+      }
+
+      // Xóa một mục lịch sử
+      async function deleteHistoryItem(id) {
+        if (!confirm("Bạn có chắc muốn xóa mục này?")) return;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/api/tracking/history/${id}`,
+            {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+
+          if (response.ok) {
+            loadAllData();
+          } else {
+            alert("Không thể xóa mục này!");
+          }
+        } catch (error) {
+          console.error("Lỗi khi xóa:", error);
+          alert("Có lỗi xảy ra!");
+        }
+      }
+
+      // Xóa toàn bộ lịch sử
+      async function clearAllHistory() {
+        if (!confirm("Bạn có chắc muốn xóa TOÀN BỘ lịch sử?")) return;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/api/tracking/history/clear`,
+            {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+
+          if (response.ok) {
+            loadAllData();
+          } else {
+            alert("Không thể xóa lịch sử!");
+          }
+        } catch (error) {
+          console.error("Lỗi khi xóa:", error);
+          alert("Có lỗi xảy ra!");
+        }
+      }
+
+      // Format ngày tháng
       function formatDate(dateStr) {
         if (!dateStr) return "Không rõ";
         try {
@@ -301,26 +409,29 @@
         }
       }
 
+      // Tính toán thống kê
       function calculateStatistics(history) {
         const total = history.length;
-        const sick = history.filter((h) => !h.is_healthy).length;
+        const sick = history.filter(
+          (h) => !isHealthyPlant(h.disease_name),
+        ).length;
         const healthy = total - sick;
 
         const plantMap = new Map();
-        history.forEach((h) =>
-          plantMap.set(h.plant_type, (plantMap.get(h.plant_type) || 0) + 1),
-        );
+        history.forEach((h) => {
+          const plant = h.plant_type || "Khác";
+          plantMap.set(plant, (plantMap.get(plant) || 0) + 1);
+        });
         const by_plant = Array.from(plantMap.entries()).map(
           ([plant_type, count]) => ({ plant_type, count }),
         );
 
         const diseaseMap = new Map();
         history.forEach((h) => {
-          if (!h.is_healthy)
-            diseaseMap.set(
-              h.disease_name,
-              (diseaseMap.get(h.disease_name) || 0) + 1,
-            );
+          if (!isHealthyPlant(h.disease_name)) {
+            const displayName = getDisplayName(h.disease_name);
+            diseaseMap.set(displayName, (diseaseMap.get(displayName) || 0) + 1);
+          }
         });
         const by_disease = Array.from(diseaseMap.entries()).map(
           ([disease_name, count]) => ({ disease_name, count }),
@@ -350,6 +461,7 @@
         return { total, sick, healthy, by_plant, by_disease, monthly };
       }
 
+      // Hiển thị thống kê
       function displayStatistics(stats) {
         document.getElementById("statsContainer").innerHTML = `
                 <div class="col-md-3 col-6"><div class="stat-card"><div class="stat-number">${stats.total}</div><div class="stat-label">Tổng chẩn đoán</div></div></div>
@@ -419,70 +531,78 @@
         });
       }
 
+      // Hiển thị danh sách lịch sử
       function displayHistory(history) {
         const container = document.getElementById("historyContainer");
         if (!history || history.length === 0) {
           container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox fa-3x"></i><p class="mt-2">Chưa có lịch sử chẩn đoán nào</p><a href="/diagnose" class="btn btn-success btn-sm">Chẩn đoán ngay</a></div>`;
           return;
         }
+
         container.innerHTML = history
-          .map(
-            (item) => `
-                <div class="history-item" onclick='showHistoryDetail(${JSON.stringify(item).replace(/'/g, "\\'")})'>
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div class="flex-grow-1">
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <i class="fas ${item.is_healthy ? "fa-check-circle text-success" : "fa-bug text-danger"}"></i>
-                                <span class="disease-badge ${item.is_healthy ? "healthy" : "sick"}">${item.disease_name || "Chưa xác định"}</span>
-                                <small class="text-muted">${item.plant_type || "Cây trồng"}</small>
+          .map((item) => {
+            const displayName = getDisplayName(item.disease_name);
+            const isHealthy = isHealthyPlant(item.disease_name);
+            const confidencePercent = Math.round((item.confidence || 0) * 100);
+
+            return `
+                    <div class="history-item" onclick='showHistoryDetail(${JSON.stringify(item).replace(/'/g, "\\'")})'>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="fas ${isHealthy ? "fa-check-circle text-success" : "fa-bug text-danger"}"></i>
+                                    <span class="disease-badge ${isHealthy ? "healthy" : "sick"}">${displayName}</span>
+                                    <small class="text-muted">${item.plant_type || "Cây trồng"}</small>
+                                </div>
+                                <div class="small"><i class="far fa-calendar-alt"></i> ${formatDate(item.diagnosis_date)}<span class="ms-3">Độ chính xác: ${confidencePercent}%</span></div>
+                                <div class="confidence-bar"><div class="confidence-fill" style="width: ${confidencePercent}%"></div></div>
                             </div>
-                            <div class="small"><i class="far fa-calendar-alt"></i> ${formatDate(item.diagnosis_date)}<span class="ms-3">Độ chính xác: ${Math.round((item.confidence || 0) * 100)}%</span></div>
-                            <div class="confidence-bar"><div class="confidence-fill" style="width: ${Math.round((item.confidence || 0) * 100)}%"></div></div>
+                            <button class="btn btn-sm btn-link text-danger" onclick="event.stopPropagation(); deleteHistoryItem(${item.id})"><i class="fas fa-times"></i></button>
                         </div>
-                        <button class="btn btn-sm btn-link text-danger" onclick="event.stopPropagation(); deleteHistoryItem(${item.id})"><i class="fas fa-times"></i></button>
                     </div>
-                </div>
-            `,
-          )
+                `;
+          })
           .join("");
       }
 
-      function deleteHistoryItem(id) {
-        if (!confirm("Bạn có chắc muốn xóa mục này?")) return;
-        let history = getHistory().filter((item) => item.id !== id);
-        localStorage.setItem("diagnosis_history", JSON.stringify(history));
-        loadAllData();
-      }
-
-      function clearAllHistory() {
-        if (!confirm("Bạn có chắc muốn xóa TOÀN BỘ lịch sử?")) return;
-        localStorage.removeItem("diagnosis_history");
-        loadAllData();
-      }
-
+      // Hiển thị chi tiết trong modal
       function showHistoryDetail(item) {
+        const displayName = getDisplayName(item.disease_name);
+        const isHealthy = isHealthyPlant(item.disease_name);
+        const confidencePercent = Math.round((item.confidence || 0) * 100);
+
         document.getElementById("historyDetail").innerHTML = `
                 <div class="text-center">
-                    <h5 class="text-success">${item.disease_name || "Chưa xác định"}</h5>
+                    <h5 class="text-success">${displayName}</h5>
                     <p><strong>Loại cây:</strong> ${item.plant_type || "Cây trồng"}</p>
                     <p><strong>Ngày chẩn đoán:</strong> ${new Date(item.diagnosis_date).toLocaleString("vi-VN")}</p>
-                    <p><strong>Độ chính xác:</strong> ${Math.round((item.confidence || 0) * 100)}%</p>
-                    <div class="confidence-bar"><div class="confidence-fill" style="width: ${Math.round((item.confidence || 0) * 100)}%"></div></div>
-                    ${!item.is_healthy ? `<div class="alert alert-info mt-3"><i class="fas fa-info-circle"></i> <strong>Gợi ý:</strong> Tham khảo Hướng dẫn chăm sóc để xử lý bệnh này.</div>` : ""}
+                    <p><strong>Độ chính xác:</strong> ${confidencePercent}%</p>
+                    <div class="confidence-bar"><div class="confidence-fill" style="width: ${confidencePercent}%"></div></div>
+                    ${!isHealthy ? `<div class="alert alert-info mt-3"><i class="fas fa-info-circle"></i> <strong>Gợi ý:</strong> Tham khảo Hướng dẫn chăm sóc để xử lý bệnh này.</div>` : ""}
                 </div>
             `;
         new bootstrap.Modal(document.getElementById("historyModal")).show();
       }
 
-      function loadAllData() {
-        const history = getHistory();
-        const stats = calculateStatistics(history);
-        displayStatistics(stats);
-        displayHistory(history);
+      // Tải toàn bộ dữ liệu
+      async function loadAllData() {
+        const loading = document.getElementById("loading");
+        loading.style.display = "block";
+
+        try {
+          const history = await getHistoryFromServer();
+          const stats = calculateStatistics(history);
+          displayStatistics(stats);
+          displayHistory(history);
+        } catch (error) {
+          console.error("Lỗi tải dữ liệu:", error);
+        } finally {
+          loading.style.display = "none";
+        }
       }
 
+      // Tải dữ liệu lần đầu
       loadAllData();
-      setInterval(loadAllData, 3000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
