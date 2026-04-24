@@ -84,6 +84,11 @@
         border-left: 5px solid #28a745;
       }
 
+      .alert-info {
+        background: linear-gradient(135deg, #e3f2fd, #e1f5fe);
+        border-left: 5px solid #17a2b8;
+      }
+
       @keyframes slideIn {
         from {
           opacity: 0;
@@ -210,6 +215,52 @@
           display: none;
         }
       }
+
+      .suggestion-badge {
+        display: inline-block;
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-radius: 20px;
+        padding: 5px 12px;
+        margin: 5px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .suggestion-badge:hover {
+        background: var(--primary-green);
+        color: white;
+      }
+
+      .city-suggestions {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      /* Risk level styles */
+      .risk-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+      }
+      .risk-warning {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #212529;
+      }
+      .risk-success {
+        background: linear-gradient(135deg, #28a745, #1e7e34);
+        color: white;
+      }
+      .risk-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-top: 10px;
+      }
     </style>
   </head>
   <body>
@@ -232,14 +283,37 @@
                   type="text"
                   id="cityInput"
                   class="form-control form-control-lg"
-                  placeholder="Nhập tên thành phố..."
+                  placeholder="Nhập tên thành phố (Hà Nội, Hồ Chí Minh, Đà Nẵng...)"
                   onkeyup="searchCity()"
+                  onkeypress="handleKeyPress(event)"
                 />
                 <button class="btn btn-success" onclick="getWeather()">
                   <i class="fas fa-search"></i> Tìm
                 </button>
               </div>
               <div id="searchResults" class="search-results"></div>
+            </div>
+
+            <!-- Thành phố gợi ý -->
+            <div class="city-suggestions mt-3">
+              <span class="suggestion-badge" onclick="selectCity('Hà Nội')"
+                >Hà Nội</span
+              >
+              <span class="suggestion-badge" onclick="selectCity('Hồ Chí Minh')"
+                >Hồ Chí Minh</span
+              >
+              <span class="suggestion-badge" onclick="selectCity('Đà Nẵng')"
+                >Đà Nẵng</span
+              >
+              <span class="suggestion-badge" onclick="selectCity('Hải Phòng')"
+                >Hải Phòng</span
+              >
+              <span class="suggestion-badge" onclick="selectCity('Cần Thơ')"
+                >Cần Thơ</span
+              >
+              <span class="suggestion-badge" onclick="selectCity('Đà Lạt')"
+                >Đà Lạt</span
+              >
             </div>
           </div>
 
@@ -289,6 +363,55 @@
     <script>
       let currentCity = "Hà Nội";
 
+      // Map icon name -> FontAwesome class
+      function getIconHtml(iconName) {
+        const iconMap = {
+          sun: '<i class="fas fa-sun" style="color: #ffc107;"></i>',
+          moon: '<i class="fas fa-moon" style="color: #6c757d;"></i>',
+          cloud: '<i class="fas fa-cloud" style="color: #6c757d;"></i>',
+          "cloud-sun":
+            '<i class="fas fa-cloud-sun" style="color: #6c757d;"></i>',
+          "cloud-moon":
+            '<i class="fas fa-cloud-moon" style="color: #6c757d;"></i>',
+          "cloud-rain":
+            '<i class="fas fa-cloud-rain" style="color: #007bff;"></i>',
+          wind: '<i class="fas fa-wind" style="color: #17a2b8;"></i>',
+          bolt: '<i class="fas fa-bolt" style="color: #ffc107;"></i>',
+          snowflake: '<i class="fas fa-snowflake" style="color: #17a2b8;"></i>',
+          smog: '<i class="fas fa-smog" style="color: #6c757d;"></i>',
+        };
+        return iconMap[iconName] || iconMap["cloud-sun"];
+      }
+
+      // Lấy icon lớn (size 80px)
+      function getLargeIconHtml(iconName) {
+        const iconMap = {
+          sun: '<i class="fas fa-sun" style="font-size: 80px; color: #ffc107;"></i>',
+          moon: '<i class="fas fa-moon" style="font-size: 80px; color: #6c757d;"></i>',
+          cloud:
+            '<i class="fas fa-cloud" style="font-size: 80px; color: #6c757d;"></i>',
+          "cloud-sun":
+            '<i class="fas fa-cloud-sun" style="font-size: 80px; color: #ffc107;"></i>',
+          "cloud-moon":
+            '<i class="fas fa-cloud-moon" style="font-size: 80px; color: #6c757d;"></i>',
+          "cloud-rain":
+            '<i class="fas fa-cloud-rain" style="font-size: 80px; color: #007bff;"></i>',
+          wind: '<i class="fas fa-wind" style="font-size: 80px; color: #17a2b8;"></i>',
+          bolt: '<i class="fas fa-bolt" style="font-size: 80px; color: #ffc107;"></i>',
+          snowflake:
+            '<i class="fas fa-snowflake" style="font-size: 80px; color: #17a2b8;"></i>',
+          smog: '<i class="fas fa-smog" style="font-size: 80px; color: #6c757d;"></i>',
+        };
+        return iconMap[iconName] || iconMap["cloud-sun"];
+      }
+
+      // Xử lý phím Enter
+      function handleKeyPress(event) {
+        if (event.key === "Enter") {
+          getWeather();
+        }
+      }
+
       // Tìm kiếm thành phố
       async function searchCity() {
         const keyword = document.getElementById("cityInput").value;
@@ -302,10 +425,15 @@
           const response = await fetch(
             `/api/weather/search?q=${encodeURIComponent(keyword)}`,
           );
+
+          if (!response.ok) {
+            throw new Error("Search failed");
+          }
+
           const cities = await response.json();
 
           const resultsDiv = document.getElementById("searchResults");
-          if (cities.length > 0) {
+          if (cities && cities.length > 0) {
             resultsDiv.innerHTML = cities
               .map(
                 (city) => `<div onclick="selectCity('${city}')">${city}</div>`,
@@ -313,10 +441,36 @@
               .join("");
             resultsDiv.style.display = "block";
           } else {
-            resultsDiv.style.display = "none";
+            const fallbackCities = [
+              "Hà Nội",
+              "Hồ Chí Minh",
+              "Đà Nẵng",
+              "Hải Phòng",
+              "Cần Thơ",
+              "Huế",
+              "Nha Trang",
+              "Đà Lạt",
+              "Vũng Tàu",
+              "Quảng Ninh",
+            ];
+            const filtered = fallbackCities.filter((c) =>
+              c.toLowerCase().includes(keyword.toLowerCase()),
+            );
+            if (filtered.length > 0) {
+              resultsDiv.innerHTML = filtered
+                .map(
+                  (city) =>
+                    `<div onclick="selectCity('${city}')">${city}</div>`,
+                )
+                .join("");
+              resultsDiv.style.display = "block";
+            } else {
+              resultsDiv.style.display = "none";
+            }
           }
         } catch (error) {
           console.error("Search error:", error);
+          document.getElementById("searchResults").style.display = "none";
         }
       }
 
@@ -332,6 +486,11 @@
       async function getWeather() {
         const city = document.getElementById("cityInput").value || currentCity;
 
+        if (!city || city.trim() === "") {
+          showError("Vui lòng nhập tên thành phố");
+          return;
+        }
+
         // Hiển thị loading
         document.getElementById("loading").style.display = "block";
         document.getElementById("currentWeather").style.display = "none";
@@ -344,29 +503,58 @@
           const weatherRes = await fetch(
             `/api/weather?city=${encodeURIComponent(city)}`,
           );
-          const weatherData = await weatherRes.json();
 
-          if (weatherData.success) {
-            displayCurrentWeather(weatherData.current);
-            displayAlerts(weatherData.alerts);
-            displayCareSchedule(weatherData.care_schedule);
-            currentCity = weatherData.current.city;
+          if (!weatherRes.ok) {
+            throw new Error(`HTTP ${weatherRes.status}`);
+          }
+
+          const weatherResponse = await weatherRes.json();
+
+          // Xử lý response
+          let weatherData, alerts, careSchedule;
+
+          if (weatherResponse.current) {
+            weatherData = weatherResponse.current;
+            alerts = weatherResponse.alerts;
+            careSchedule = weatherResponse.care_schedule;
           } else {
-            showError("Không tìm thấy thành phố");
+            weatherData = weatherResponse;
+          }
+
+          if (weatherData && weatherData.success !== false) {
+            displayCurrentWeather(weatherData);
+            if (alerts) displayAlerts(alerts);
+            if (careSchedule) displayCareSchedule(careSchedule);
+            currentCity = weatherData.city || city;
+            document.getElementById("cityInput").value = currentCity;
+          } else {
+            showError(
+              weatherData?.error || "Không tìm thấy thông tin thời tiết",
+            );
           }
 
           // Lấy dự báo
-          const forecastRes = await fetch(
-            `/api/weather/forecast?city=${encodeURIComponent(city)}`,
-          );
-          const forecastData = await forecastRes.json();
+          try {
+            const forecastRes = await fetch(
+              `/api/weather/forecast?city=${encodeURIComponent(city)}`,
+            );
 
-          if (forecastData.success) {
-            displayForecast(forecastData.forecast);
+            if (forecastRes.ok) {
+              const forecastData = await forecastRes.json();
+              if (forecastData.success && forecastData.forecast) {
+                displayForecast(forecastData.forecast);
+              } else if (Array.isArray(forecastData)) {
+                displayForecast(forecastData);
+              }
+            }
+          } catch (forecastError) {
+            console.warn("Không thể lấy dự báo:", forecastError);
           }
         } catch (error) {
           console.error("Weather error:", error);
-          showError("Có lỗi xảy ra, vui lòng thử lại");
+          showError(
+            "Có lỗi xảy ra khi lấy dữ liệu thời tiết: " + error.message,
+          );
         } finally {
           document.getElementById("loading").style.display = "none";
         }
@@ -375,39 +563,75 @@
       // Hiển thị thời tiết hiện tại
       function displayCurrentWeather(weather) {
         const container = document.getElementById("currentWeather");
+
+        const today = new Date();
+        const dateStr = today.toLocaleDateString("vi-VN", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+
+        // Ưu tiên dùng icon_name, fallback sang icon cũ
+        const iconName =
+          weather.icon_name ||
+          (weather.icon
+            ? weather.icon.replace(/fa-[a-z-]+ /, "").split(" ")[0]
+            : "cloud-sun");
+        const iconHtml = getIconHtml(iconName);
+        const largeIconHtml = getLargeIconHtml(iconName);
+
+        // Risk level
+        const riskLevel = weather.risk_level || "success";
+        const riskText = {
+          danger: "⚠️ Rủi ro cao",
+          warning: "⚠️ Rủi ro trung bình",
+          success: "✅ An toàn",
+        };
+
         container.innerHTML = `
-                <div class="weather-card">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2>${weather.city}</h2>
-                            <p class="text-muted">${weather.date || "Hôm nay"}</p>
-                            <div class="temp-big">${weather.temperature}°C</div>
-                            <p>Cảm giác như ${weather.feels_like}°C</p>
-                            <p><i class="${weather.icon}"></i> ${weather.condition}</p>
-                        </div>
-                        <div>
-                            <i class="${weather.icon.replace("text-warning", "").replace("text-primary", "").replace("text-info", "")}" style="font-size: 80px;"></i>
-                        </div>
-                    </div>
-                    <div class="row mt-4 text-center">
-                        <div class="col-4">
-                            <i class="fas fa-tint fa-2x text-primary"></i>
-                            <p class="mb-0 mt-2">Độ ẩm</p>
-                            <h5>${weather.humidity}%</h5>
-                        </div>
-                        <div class="col-4">
-                            <i class="fas fa-wind fa-2x text-info"></i>
-                            <p class="mb-0 mt-2">Gió</p>
-                            <h5>${weather.wind_speed} km/h</h5>
-                        </div>
-                        <div class="col-4">
-                            <i class="fas fa-tachometer-alt fa-2x text-secondary"></i>
-                            <p class="mb-0 mt-2">Áp suất</p>
-                            <h5>${weather.pressure} hPa</h5>
-                        </div>
-                    </div>
-                </div>
-            `;
+          <div class="weather-card">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h2>${weather.city || "Đang cập nhật"}</h2>
+                <p class="text-muted">${dateStr}</p>
+                <div class="temp-big">${weather.temperature || "--"}°C</div>
+                <p>Cảm giác như ${weather.feels_like || weather.temperature || "--"}°C</p>
+                <p>${iconHtml} ${weather.condition || "Đang cập nhật"}</p>
+                <div class="risk-badge risk-${riskLevel}">${riskText[riskLevel]}</div>
+              </div>
+              <div>
+                ${largeIconHtml}
+              </div>
+            </div>
+            <div class="row mt-4 text-center">
+              <div class="col-4">
+                <i class="fas fa-tint fa-2x text-primary"></i>
+                <p class="mb-0 mt-2">Độ ẩm</p>
+                <h5>${weather.humidity || "--"}%</h5>
+              </div>
+              <div class="col-4">
+                <i class="fas fa-wind fa-2x text-info"></i>
+                <p class="mb-0 mt-2">Gió</p>
+                <h5>${weather.wind_speed || "--"} km/h</h5>
+              </div>
+              <div class="col-4">
+                <i class="fas fa-tachometer-alt fa-2x text-secondary"></i>
+                <p class="mb-0 mt-2">Áp suất</p>
+                <h5>${weather.pressure || "--"} hPa</h5>
+              </div>
+            </div>
+            ${
+              weather.description
+                ? `
+            <div class="mt-3 pt-2 border-top">
+              <small class="text-muted"><i class="fas fa-info-circle"></i> Chi tiết: ${weather.description}</small>
+            </div>
+            `
+                : ""
+            }
+          </div>
+        `;
         container.style.display = "block";
       }
 
@@ -423,30 +647,34 @@
         container.innerHTML = alerts
           .map(
             (alert) => `
-                <div class="weather-card alert-${alert.type}">
-                    <div class="d-flex">
-                        <div class="me-3">
-                            <i class="fas ${alert.icon} fa-2x"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-2">${alert.title}</h5>
-                            <p class="mb-2">${alert.message}</p>
-                            ${
-                              alert.advice
-                                ? `
-                                <div class="mt-2">
-                                    <small><strong>📌 Lời khuyên:</strong></small>
-                                    <ul class="small mb-0 mt-1">
-                                        ${alert.advice.map((a) => `<li>${a}</li>`).join("")}
-                                    </ul>
-                                </div>
-                            `
-                                : ""
-                            }
-                        </div>
-                    </div>
+            <div class="weather-card alert-${alert.type}">
+              <div class="d-flex">
+                <div class="me-3">
+                  <i class="fas ${alert.icon || "fa-exclamation-triangle"} fa-2x"></i>
                 </div>
-            `,
+                <div>
+                  <h5 class="mb-2">${alert.title}</h5>
+                  <p class="mb-2">${alert.message}</p>
+                  ${
+                    alert.advice
+                      ? `
+                    <div class="mt-2">
+                      <small><strong>📌 Lời khuyên:</strong></small>
+                      <ul class="small mb-0 mt-1">
+                        ${
+                          Array.isArray(alert.advice)
+                            ? alert.advice.map((a) => `<li>${a}</li>`).join("")
+                            : `<li>${alert.advice}</li>`
+                        }
+                      </ul>
+                    </div>
+                  `
+                      : ""
+                  }
+                </div>
+              </div>
+            </div>
+          `,
           )
           .join("");
       }
@@ -457,24 +685,30 @@
 
         const container = document.getElementById("forecastContainer");
         container.innerHTML = `
-                <h4 class="mb-3"><i class="fas fa-calendar-week"></i> Dự báo 5 ngày tới</h4>
-                <div class="row">
-                    ${forecast
-                      .map(
-                        (day) => `
-                        <div class="col-md-2 col-4 mb-2">
-                            <div class="forecast-item">
-                                <p class="mb-1"><strong>${day.day_of_week}</strong></p>
-                                <i class="fas ${day.icon.split(" ")[0]} fa-2x"></i>
-                                <p class="mb-0 mt-2">${day.temp_max}° / ${day.temp_min}°</p>
-                                <small>${day.condition}</small>
-                            </div>
-                        </div>
-                    `,
-                      )
-                      .join("")}
+          <h4 class="mb-3"><i class="fas fa-calendar-week"></i> Dự báo 5 ngày tới</h4>
+          <div class="row">
+            ${forecast
+              .map((day) => {
+                const iconName =
+                  day.icon_name ||
+                  (day.icon
+                    ? day.icon.replace(/fa-[a-z-]+ /, "").split(" ")[0]
+                    : "cloud-sun");
+                const iconHtml = getIconHtml(iconName);
+                return `
+                <div class="col-md-2 col-4 mb-2">
+                  <div class="forecast-item">
+                    <p class="mb-1"><strong>${day.day_of_week || "??"}</strong></p>
+                    ${iconHtml}
+                    <p class="mb-0 mt-2">${day.temp_max || "--"}° / ${day.temp_min || "--"}°</p>
+                    <small>${day.condition || ""}</small>
+                  </div>
                 </div>
-            `;
+              `;
+              })
+              .join("")}
+          </div>
+        `;
       }
 
       // Hiển thị lịch chăm sóc
@@ -486,24 +720,24 @@
 
         const container = document.getElementById("careSchedule");
         container.innerHTML = `
-                <h4 class="mb-3 mt-4"><i class="fas fa-clipboard-list"></i> Lịch chăm sóc đề xuất</h4>
-                ${schedule
-                  .map(
-                    (item) => `
-                    <div class="schedule-item">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1">${item.task}</h6>
-                                <small class="text-muted">🕐 ${item.time}</small>
-                                <p class="small mb-0 mt-1">📝 ${item.note}</p>
-                            </div>
-                            <span class="priority-${item.priority.toLowerCase()}">${item.priority}</span>
-                        </div>
-                    </div>
-                `,
-                  )
-                  .join("")}
-            `;
+          <h4 class="mb-3 mt-4"><i class="fas fa-clipboard-list"></i> Lịch chăm sóc đề xuất</h4>
+          ${schedule
+            .map(
+              (item) => `
+            <div class="schedule-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div style="flex:1">
+                  <h6 class="mb-1">${item.task}</h6>
+                  <small class="text-muted">🕐 ${item.time || "Linh hoạt"}</small>
+                  <p class="small mb-0 mt-1">📝 ${item.note || ""}</p>
+                </div>
+                <span class="priority-${(item.priority || "trung bình").toLowerCase()}">${item.priority || "Trung bình"}</span>
+              </div>
+            </div>
+          `,
+            )
+            .join("")}
+        `;
       }
 
       // Hiển thị lỗi
@@ -511,17 +745,19 @@
         const container = document.getElementById("currentWeather");
         container.style.display = "block";
         container.innerHTML = `
-                <div class="weather-card text-center text-danger">
-                    <i class="fas fa-exclamation-triangle fa-3x"></i>
-                    <p class="mt-2">${message}</p>
-                    <button class="btn btn-success" onclick="getWeather()">Thử lại</button>
-                </div>
-            `;
+          <div class="weather-card text-center text-danger">
+            <i class="fas fa-exclamation-triangle fa-3x"></i>
+            <p class="mt-2">${message}</p>
+            <p class="small text-muted">Thành phố hỗ trợ: Hà Nội, Hồ Chí Minh, Đà Nẵng, Hải Phòng, Cần Thơ, Huế, Nha Trang, Đà Lạt, Vũng Tàu, Quảng Ninh</p>
+            <button class="btn btn-success mt-2" onclick="getWeather()">Thử lại</button>
+          </div>
+        `;
       }
 
       // Ẩn kết quả tìm kiếm khi click ra ngoài
       document.addEventListener("click", function (e) {
-        if (!document.querySelector(".search-container").contains(e.target)) {
+        const searchContainer = document.querySelector(".search-container");
+        if (searchContainer && !searchContainer.contains(e.target)) {
           document.getElementById("searchResults").style.display = "none";
         }
       });

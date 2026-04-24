@@ -317,13 +317,9 @@ def api_get_weather():
 def api_get_forecast():
     """API lấy dự báo 5 ngày"""
     city = request.args.get('city', 'Hà Nội')
-    forecast = WeatherModel.get_5day_forecast(city)
+    result = WeatherModel.get_5day_forecast(city)  # result đã có success, city, forecast
     
-    return jsonify({
-        "success": True,
-        "city": city,
-        "forecast": forecast
-    })
+    return jsonify(result)  # Trả thẳng result
 
 @app.route('/api/weather/cities', methods=['GET'])
 def api_get_cities():
