@@ -69,7 +69,7 @@ PLANT_CONFIG = {
         ]
     },
     "thanh_long": {
-        "model_path": r"F:/TTCS/APP/models/dragonfruit_model.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_thanh_long_model.keras",
         "class_names": [
             "benh_dom_den",
             "benh_dom_nau",
@@ -78,16 +78,16 @@ PLANT_CONFIG = {
         ]
     },
     "buoi": {
-        "model_path": r"F:/TTCS/APP/models/citrus_model.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_buoi_model.keras",
         "class_names": [
             "benh_dom_den",
-            "benh_loet_vikhuan",
+            "benh_loet_vi_khuan",
             "benh_vang_la_gan_xanh",
             "la_khoe_manh"
         ]
     },
     "vai": {
-        "model_path": r"F:/TTCS/APP/models/lychee_model.keras",
+        "model_path": r"F:/TTCS/APP/models/Cay_vai_model.keras",
         "class_names": [
             "benh_phan_trang",
             "benh_suong_mai",
